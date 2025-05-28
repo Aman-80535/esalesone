@@ -85,14 +85,19 @@ export const Header = () => {
 							<li className="nav-item">
 								<Link className="nav-link active" aria-current="page" href="#">{userData?.email}</Link>
 							</li>
-							<li className="nav-item">
-								<Link className="nav-link" href="/myorders">My Orders</Link>
-							</li>
-							<li className="nav-item">
-								<Link className="nav-link" href="/myaccount">
-									My Account
-								</Link>
-							</li>
+							{
+								token &&
+								<>
+									<li className="nav-item">
+										<Link className="nav-link" href="/myorders">My Orders</Link>
+									</li>
+									<li className="nav-item">
+										<Link className="nav-link" href="/myaccount">
+											My Account
+										</Link>
+									</li>
+								</>
+							}
 							{!token ?
 								<li className="nav-item">
 									<Link className="nav-link" href="/auth/login">
