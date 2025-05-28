@@ -9,7 +9,7 @@ const cors = require('cors');
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000',  // React dev server
+  origin: 'https://esalesone.vercel.app/',  // React dev server
   credentials: true                // if you're using cookies or headers
 }));
 
