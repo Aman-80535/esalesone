@@ -1,0 +1,76 @@
+/* Cart Button */
+.cart-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .cart-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Cart Popup */
+  .cart-popup {
+    position: absolute; /* Use absolute for positioning relative to the parent */
+    top: 43px; /* Adjust top position */
+    right: 1rem; /* Add some spacing from the right edge */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+    background-color: white;
+    border-radius: 9px;
+    border: 1px solid black;
+    width: 300px; /* Set a max width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow for better UI */
+  }
+
+  .cart-popup-content {
+    background-color: white;
+    padding: 20px;
+    width: 300px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: relative;
+  }
+  
+  .cart-popup h4 {
+    margin-top: 0;
+    font-size: 1.5rem;
+  }
+  
+  .cart-popup ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  .cart-popup ul li {
+    margin: 10px 0;
+  }
+  
+  .cart-popup button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  
+  .cart-popup button:hover {
+    background-color: #0056b3;
+  }
+  
+
+  @media (max-width: 768px) {
+    .cart-popup {
+      right: 0.5rem; /* Adjust for smaller screens */
+      width: 90%; /* Take up more horizontal space */
+    }
+  }

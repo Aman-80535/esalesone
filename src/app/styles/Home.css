@@ -1,0 +1,36 @@
+/* Card Container */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Four cards in one row */
+  gap: 20px; /* Space between cards */
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto; /* Center the container */
+}
+
+/* Individual Card */
+.card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+
+.card:hover {
+  transform: scale(1.05); /* Zoom effect on hover */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  color: #555;
+}
