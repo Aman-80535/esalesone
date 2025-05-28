@@ -45,9 +45,10 @@ export const LoginForm = () => {
 			const idToken = await user.getIdToken();
 			console.log("User ID Token:", idToken);
 			Cookies.set('token', idToken, {
-				expires: 1,          // 1 day
-				path: '/',           // accessible everywhere
-				sameSite: 'Lax',     // prevents CSRF but allows most use cases
+				expires: 1,                    // 1 day
+				path: '/',                    // root-level cookie
+				sameSite: 'Strict',           // or 'Lax', but 'Strict' is safer
+				secure: true,                 // MUST be true in production
 			});
 			dispatch(setToken(idToken))
 			dispatch(fetchUserData())
