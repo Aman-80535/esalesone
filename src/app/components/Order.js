@@ -15,6 +15,7 @@ export default function ProductDetails() {
 	const [showPopup, setShowPopup] = useState(false);
 	const [checkoutFormData, setCheckoutFormData] = useState('');
 	const { items, loading } = useSelector((s) => s.cart);
+	const [orderInprocess, setOrderInprocess] = useState(false);
 	const router = useRouter();
 	const dispatch = useDispatch();
 	const products = items || [];
@@ -46,6 +47,7 @@ export default function ProductDetails() {
 
 
 	async function createOrder(token = {}) {
+		setOrderInprocess(true)
 		try {
 			const result = await dispatch(addOrder({
 				items,
@@ -77,6 +79,10 @@ export default function ProductDetails() {
 			console.log('❌ Unexpected error during createOrder:', error);
 			alert(error || 'Something went wrong while placing your order.');
 		}
+		finally{
+		setOrderInprocess(false)
+
+		}
 	}
 
 
@@ -90,7 +96,7 @@ export default function ProductDetails() {
 		}
 	};
 
-	if (loading) {
+	if (loading || orderInprocess) {
 		return <Loader />
 	}
 

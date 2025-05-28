@@ -44,11 +44,15 @@ export const LoginForm = () => {
 			const user = userCredential.user;
 			const idToken = await user.getIdToken();
 			console.log("User ID Token:", idToken);
-			Cookies.set('token', idToken, { expires: 7 });
+			Cookies.set('token', idToken, {
+				expires: 1,          // 1 day
+				path: '/',           // accessible everywhere
+				sameSite: 'Lax',     // prevents CSRF but allows most use cases
+			});
 			dispatch(setToken(idToken))
 			dispatch(fetchUserData())
 			simpleNotify("Login Successfully!")
-			setTimeout(() =>{
+			setTimeout(() => {
 			}, 3000)
 			router.push("/")
 		} catch (error) {
