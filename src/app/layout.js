@@ -7,6 +7,7 @@ import { LoaderProvider } from "@/context/LoaderContext";
 import GlobalLoader from "./components/common/GlobalLoader.js";
 import { InitToken } from "@/utils/InitToken";
 import { AuthProvider } from "@/context/AuthProvider";
+import './globals.css'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

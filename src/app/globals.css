@@ -1,7 +1,63 @@
+@import "tailwindcss";
+
 :root {
-  --background: #ffffff;
+  --root-background: #ffffff;
   --foreground: #171717;
+  --global-background: #d8ede8;
+  --heading-color: #006e3b;
+  --primary-btn-color: #0d493b;
 }
+
+
+* {
+  font-family: "Roboto !important";
+}
+
+:root {
+  /* Mobile defaults */
+  --font-family-header: "Poppins", sans-serif;
+  --font-size-h1: 1.5rem;
+  /* ~24px */
+  --font-size-h2: 1.25rem;
+  /* ~20px */
+  --font-size-h3: 1.125rem;
+  /* ~18px */
+  --font-weight-bold: 700;
+  --font-weight-semibold: 600;
+}
+
+/* Desktop overrides */
+@media (min-width: 768px) {
+  :root {
+    --font-size-h1: 2.5rem;
+    /* ~40px */
+    --font-size-h2: 1.5rem;
+    /* ~32px */
+    --font-size-h3: 1.15rem;
+    /* ~24px */
+  }
+}
+
+/* Apply globally */
+h1 {
+  font-family: var(--font-family-header) !important;
+  font-size: var(--font-size-h1) !important;
+  font-weight: var(--font-weight-bold) !important;
+}
+
+h2 {
+  font-family: var(--font-family-header) !important;
+  font-size: var(--font-size-h2) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
+h3 {
+  color: var(--heading-color) !important;
+  font-family: var(--font-family-header) !important;
+  font-size: var(--font-size-h3) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
 
 @media (prefers-color-scheme: dark) {
   :root {

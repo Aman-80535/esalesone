@@ -1,0 +1,6 @@
+.cart-btn{
+    border-radius: 15px !important;
+}
+.product-view-container{
+    background-color: var(--global-background);
+}

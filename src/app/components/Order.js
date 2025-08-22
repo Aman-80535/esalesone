@@ -47,13 +47,14 @@ export default function ProductDetails() {
 
 
 	async function createOrder(token = {}) {
-		setOrderInprocess(true)
+		setOrderInprocess(true);
 		try {
 			const result = await dispatch(addOrder({
 				items,
 				...token,
 				...checkoutFormData,
-				grandTotal
+				grandTotal,
+				status: "pending"
 			}));
 			if (addOrder.fulfilled.match(result)) {
 				setShowPopup(false);
@@ -79,8 +80,8 @@ export default function ProductDetails() {
 			console.log('❌ Unexpected error during createOrder:', error);
 			alert(error || 'Something went wrong while placing your order.');
 		}
-		finally{
-		setOrderInprocess(false)
+		finally {
+			setOrderInprocess(false)
 
 		}
 	}
@@ -174,7 +175,7 @@ export default function ProductDetails() {
 
 										<div className="d-flex justify-content-center gap-3">
 											<button className="btn btn-success" onClick={handleOrderSubmit}>
-												Pay Later
+												Cash On Devilery
 											</button>
 											<button
 												className="btn btn-danger"

@@ -1,126 +1,163 @@
 'use client'
 
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// import { fetchUserData } from "../redux/user/userActions";
 import { fetchCart } from "@/redux/cart/cartAction";
 import CartPopup from "./CartPopup";
+import { CiShoppingCart } from "react-icons/ci";
 import { fetchUserData, logoutUser } from "@/redux/user/userActions";
 import Link from "next/link";
-import { filterProducts, setToken } from "@/redux/user/userSlice";
 import { useRouter } from 'next/navigation';
-
-
-
+import { FaBox, FaBoxOpen, FaRegUserCircle, FaUserCircle } from "react-icons/fa";
+import '../../../src/app/styles/header.css';
+import { CgProfile } from "react-icons/cg";
 
 export const Header = () => {
 	const { items } = useSelector((state) => state.cart);
-	const { loading, error, userData, token } = useSelector((state) => state.user);
+	const { userData, token } = useSelector((state) => state.user);
 	const dispatch = useDispatch();
-	const [isOpen, setIsOpen] = useState(false);
+
+	const [isOpen, setIsOpen] = useState(false); // Cart popup
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu flag
+	const [isMobileView, setIsMobileView] = useState(false);
+
 	const router = useRouter();
 
 	const togglePopup = () => setIsOpen(!isOpen);
+
 	async function handleLogoutUser(e) {
 		e.preventDefault();
 		dispatch(logoutUser());
 		router.push('/');
 	}
-	useEffect(() => {
-		if (typeof window !== 'undefined') {
 
+	useEffect(() => {
+		if (window.innerWidth < 768) {
+			setIsMobileView(true);
+		}
+
+		if (typeof window !== 'undefined') {
 			const fetchData = async () => {
-				if (true) {
-					const result = dispatch(fetchUserData(token));
-					console.log("Fetched User Data:", result);
+				if (token) {
+					await dispatch(fetchUserData(token));
 				}
 			};
 			fetchData();
 		}
-	}, []);
-
+	}, [dispatch, token]);
 
 	return (
-		<nav className="navbar navbar-expand-lg navbar-light">
-			<div className="container-fluid">
-				<Link href="/" className="navbar-brand" >Shopi</Link>
-				<button
-					className="navbar-toggler"
-					type="button"
-					data-bs-toggle="collapse"
-					data-bs-target="#navbarNav"
-					aria-controls="navbarNav"
-					aria-expanded="false"
-					aria-label="Toggle navigation"
-				>
-					<span className="navbar-toggler-icon"></span>
-				</button>
-				<div className="collapse navbar-collapse" id="navbarNav">
-					<div className="d-flex w-100">
-						{/* Left-aligned items */}
-						<ul className="navbar-nav me-auto">
-							<li className="nav-item" >
-								<Link className="nav-link active" aria-current="page" href="/" onClick={(e) => {
-									e.preventDefault();
-									dispatch(filterProducts('all'));
-								}}>All</Link>
-							</li>
-							<li className="nav-item">
-								<Link className="nav-link" href="/" onClick={(e) => {
-									e.preventDefault();
-									dispatch(filterProducts('cloth'));
-								}}>Clothes</Link>
-							</li>
-							<li className="nav-item">
-								<Link className="nav-link" href="/" onClick={(e) => {
-									e.preventDefault();
-									dispatch(filterProducts('electronics'));
-								}}>Electronics</Link>
-							</li>
+		<nav className="nav-main shadow-md header-first">
+			<div className="header-first max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="flex justify-between h-16 items-center">
+					{/* Brand */}
 
-						</ul>
-						{/* Right-aligned items */}
-						<ul className="nav ms-auto">
-							<li className="nav-item">
-								<Link className="nav-link active" aria-current="page" href="#">{userData?.email}</Link>
-							</li>
-							{
-								token &&
+
+					<Link href="/" className="brand-head text-xl font-bold ">
+						<h2>Shopi</h2>
+					</Link>
+
+
+					<div className="nav-bar">
+
+						{/* Mobile Menu Button */}
+						<button
+							onClick={() => setIsMobileMenuOpen(prev => !prev)}
+							className="md:hidden inline-flex items-center justify-center p-2 rounded-md  focus:outline-none"
+						>
+							{isMobileMenuOpen ? (
+								// X icon
+								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								</svg>
+							) : (
+								// Hamburger icon
+								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+								</svg>
+							)}
+						</button>
+
+						{/* Desktop Menu */}
+						<div className="hidden md:flex space-x-6 items-center">
+							{userData?.email && (
+								<span className="text-gray-700">{userData.email}</span>
+							)}
+
+							{token && (
 								<>
-									<li className="nav-item">
-										<Link className="nav-link" href="/myorders">My Orders</Link>
-									</li>
-									<li className="nav-item">
-										<Link className="nav-link" href="/myaccount">
-											My Account
-										</Link>
-									</li>
-								</>
-							}
-							{!token ?
-								<li className="nav-item">
-									<Link className="nav-link" href="/auth/login">
-										Login
+									<Link href="/myorders" className="fa-box relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
+										<FaBox className="w-6 h-6" />
+										<span class="hidden-text-fa-box">My Orders</span>
 									</Link>
-								</li> : <li>	<a className="nav-link" href="#" onClick={(e) =>
-									handleLogoutUser(e)
-								}>LogOut</a>
-								</li>
-							}
 
-							<li className="nav-item">
-								<Link className="nav-link" onClick={togglePopup} href="#">
-									<i className="fas fa-shopping-cart"></i> Cart ({items?.length > 0 && token ? items?.length : 0})
-								</Link>
-							</li>
+									{/* My Account */}
+									<Link href="/myaccount" className="profile-icon relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
+										<CgProfile className="w-6 h-6" />
 
-						</ul>
+									</Link>
+								</>
+							)}
+
+
+
+							<Link href="#" className="cart-icon relative flex items-center text-gray-700 hover:text-blue-600 text-2xl" onClick={() => setIsOpen(p => !p)}>
+								{/* Cart Icon */}
+								<CiShoppingCart className="w-8 h-8" />
+
+								{/* Badge Counter */}
+								{items?.length > 0 && token && (
+									<span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
+										{items.length}
+									</span>
+								)}
+							</Link>
+						</div>
 					</div>
 				</div>
 			</div>
+
+			{/* Mobile Menu */}
+			{isMobileView && isMobileMenuOpen && (
+				<div className="mobile-bar absolute top-15 right-0 md:hidden px-4 py-4 pb-4 space-y-2 bg-gray-50 shadow-md">
+					{userData?.email && (
+						<span className="block text-gray-700">{userData.email}</span>
+					)}
+
+					{token && (
+						<>
+							<Link href="/myorders" className="fa-box relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
+								<FaBox className="w-6 h-6" />
+								<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Orders</span>
+							</Link>
+
+							{/* My Account */}
+							<Link href="/myaccount" className="fa-box profiel-icon cg-mob  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
+								<CgProfile className="w-6 h-6" />
+								<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My profile</span>
+
+							</Link>
+						</>
+					)}
+
+
+					<Link href="#" className="cart-icon  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl" onClick={() => setIsOpen(p => !p)}>
+						{/* Cart Icon */}
+						<CiShoppingCart className="w-8 h-8" />
+						<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Cart</span>
+
+
+						{/* Badge Counter */}
+						{items?.length > 0 && token && (
+							<span className="count-length ml-2  bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
+								{items.length}
+							</span>
+						)}
+					</Link>
+				</div>
+			)}
+
 			<CartPopup setIsOpen={setIsOpen} isOpen={isOpen} togglePopup={togglePopup} />
 		</nav>
-
-	)
-}
+	);
+};

@@ -1,0 +1,7 @@
+.mai-carousel{
+  height: 186px;
+}
+.carousel-btns button{
+    background-color: transparent;
+    color: var(--primary-btn-color) !important;
+}

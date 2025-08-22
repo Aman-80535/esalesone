@@ -1,26 +1,41 @@
 /* Card Container */
 .card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Four cards in one row */
-  gap: 20px; /* Space between cards */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  /* Four cards in one row */
+  gap: 20px;
+  /* Space between cards */
   padding: 20px;
   max-width: 1200px;
-  margin: auto; /* Center the container */
+  margin: auto;
+  /* Center the container */
+}
+
+.main-container {
+  /* box-shadow: 0 0 90px 37px #d8ede8; */
+}
+
+.internal-container {
+  background-color: var(--global-background) !important;
+  padding-bottom: 20rem !important;
+
 }
 
 /* Individual Card */
 .card {
   background: #f9f9f9;
-  border: 1px solid #ddd;
+  border: 1px solid var(--heading-color) !important;
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgb(57 127 91);
   transition: transform 0.2s, box-shadow 0.2s;
   text-align: center;
+  cursor: pointer;
 }
 
 .card:hover {
-  transform: scale(1.05); /* Zoom effect on hover */
+  transform: scale(1.05);
+  /* Zoom effect on hover */
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
 }
 

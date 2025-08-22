@@ -10,6 +10,11 @@ export const simpleNotify = (msg) => toast(msg, {
     color: 'black'
   }
 });
+export const errorNotify = (msg) => toast(msg, {
+  style: {
+    color: 'red'
+  }
+});
 
 
 export const waitForUser = () => new Promise((resolve) => {

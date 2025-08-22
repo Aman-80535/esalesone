@@ -65,7 +65,7 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
             </div>
           )}
           <div
-            className="cart-popup-content z-10 relative"
+            className="cart-popup-content z-10 relative overflow-y-auto h-screen tailwind-scrollbar-hide"
             onClick={(e) => e.stopPropagation()}
           >
             <h4>Your Cart</h4>
