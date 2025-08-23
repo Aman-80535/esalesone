@@ -92,26 +92,26 @@ export const HomePage = ({ data = [] }) => {
 			<div>
 				<SocialPage />
 			</div>
+			<div className="mb-2" style={{ textAlign: "center", width: "100%" }}>
+				<input
+					className="text-center"
+					placeholder="Search your Product"
+					style={{
+						textAlignLast: "center",
+						height: "3rem",
+						width: "32%",
+						border: "1px solid",
+						borderRadius: "56px",
+					}}
+					value={searchKey}
+					onChange={(event) => handleSearch(event.target.value)}
+				/>
+			</div>
 			<div className="px-3 header-first flex items-center justify-center py-2">
 				<Carousel />
 			</div>
 			<div className="main-container py-2 px-3 mt-3">
 				<div className="internal-container px-4">
-					<div style={{ textAlign: "center", width: "100%" }}>
-						<input
-							className="text-center"
-							placeholder="Search a Product"
-							style={{
-								textAlignLast: "center",
-								height: "3rem",
-								width: "32%",
-								border: "1px solid",
-								borderRadius: "56px",
-							}}
-							value={searchKey}
-							onChange={(event) => handleSearch(event.target.value)}
-						/>
-					</div>
 					<div className=" mt-4">
 						<div className="row">
 							{(filteredData).map((product) => (
@@ -141,7 +141,7 @@ export const HomePage = ({ data = [] }) => {
 										</span>
 										<div className="card-body">
 											<p className="card-text">{product.category?.name}</p>
-											<h5 className="card-title">{product.name}</h5>
+											<p className="card-title">{product.name}</p>
 											<p className="card-text">{product.title}</p>
 											<p className="card-text">Price: ${product.price}</p>
 										</div>

@@ -24,6 +24,11 @@
   /* ~18px */
   --font-weight-bold: 700;
   --font-weight-semibold: 600;
+
+  --p-font-size: 0.8rem;
+  /* ~15px on small screens */
+  --p-line-height: 1.5;
+  --p-max-width: 60ch;
 }
 
 /* Desktop overrides */
@@ -58,12 +63,62 @@ h3 {
   font-weight: var(--font-weight-semibold) !important;
 }
 
+/* Tablet (≥ 768px) */
+@media (min-width: 768px) {
+  :root {
+    --p-font-size: 1rem;
+    /* 16px */
+    --p-line-height: 1.6;
+    --p-max-width: 70ch;
+    /* wider paragraphs */
+  }
+}
+
+/* Desktop (≥ 1200px) */
+@media (min-width: 1200px) {
+  :root {
+    --p-font-size: 1.125rem;
+    /* ~18px */
+    --p-line-height: 1.75;
+    --p-max-width: 80ch;
+    /* comfortable long-form reading */
+  }
+}
+
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --p-font-size: 1rem;
+    /* 16px */
+    --p-line-height: 1.6;
+    --p-max-width: 70ch;
+    /* wider paragraphs */
+  }
+}
+
+/* Desktop (≥ 1200px) */
+@media (min-width: 1200px) {
+  :root {
+    --p-font-size: 1.125rem;
+    /* ~18px */
+    --p-line-height: 1.75;
+    --p-max-width: 80ch;
+    /* comfortable long-form reading */
+  }
+}
+
+p {
+  font-size: var(--p-font-size);
+  line-height: var(--p-line-height);
+  max-width: var(--p-max-width);
+  margin-bottom: 1rem;
 }
 
 .checkout-form-field {

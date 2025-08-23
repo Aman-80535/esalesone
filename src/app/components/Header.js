@@ -67,9 +67,12 @@ export const Header = () => {
 						>
 							{isMobileMenuOpen ? (
 								// X icon
-								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-								</svg>
+								<div onClick={() => setIsOpen(false)}>
+
+									<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</div>
 							) : (
 								// Hamburger icon
 								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,13 +94,13 @@ export const Header = () => {
 										<span class="hidden-text-fa-box">My Orders</span>
 									</Link>
 
-									{/* My Account */}
-									<Link href="/myaccount" className="profile-icon relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
-										<CgProfile className="w-6 h-6" />
-
-									</Link>
 								</>
 							)}
+							{/* My Account */}
+							<Link href="/myaccount" className="profile-icon relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
+								<CgProfile className="w-6 h-6" />
+
+							</Link>
 
 
 
@@ -130,15 +133,15 @@ export const Header = () => {
 								<FaBox className="w-6 h-6" />
 								<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Orders</span>
 							</Link>
-
-							{/* My Account */}
-							<Link href="/myaccount" className="fa-box profiel-icon cg-mob  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
-								<CgProfile className="w-6 h-6" />
-								<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My profile</span>
-
-							</Link>
 						</>
 					)}
+					{/* My Account */}
+					<Link href="/myaccount" className="fa-box profiel-icon cg-mob  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
+						<CgProfile className="w-6 h-6" />
+						<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My profile</span>
+
+					</Link>
+
 
 
 					<Link href="#" className="cart-icon  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl" onClick={() => setIsOpen(p => !p)}>

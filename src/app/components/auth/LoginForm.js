@@ -57,8 +57,8 @@ export const LoginForm = () => {
 			}, 3000)
 			router.push("/")
 		} catch (error) {
-			setError(error.message);
-			console.log("Error logging in:", error.message);
+			setError("Invalid email or password");
+			console.log("Error logging in:");
 		}
 
 		setFormData({
