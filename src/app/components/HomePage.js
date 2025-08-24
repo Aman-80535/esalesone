@@ -94,7 +94,7 @@ export const HomePage = ({ data = [] }) => {
 			</div>
 			<div className="mb-2" style={{ textAlign: "center", width: "100%" }}>
 				<input
-					className="text-center"
+					className="text-center search-product"
 					placeholder="Search your Product"
 					style={{
 						textAlignLast: "center",
@@ -111,11 +111,12 @@ export const HomePage = ({ data = [] }) => {
 				<Carousel />
 			</div>
 			<div className="main-container py-2 px-3 mt-3">
-				<div className="internal-container px-4">
+				<div className="internal-container px-4 py-2">
 					<div className=" mt-4">
 						<div className="row">
 							{(filteredData).map((product) => (
-								<div className="col-lg-3 col-md-4 col-sm-6 col-6 mb-4" key={product.id} onClick={() => handleClick(product.id)} >
+								<>
+								<div className="card-parent col-lg-3 d-flex flex-col col-md-4 col-sm-6 col-6 mb-4" key={product.id} onClick={() => handleClick(product.id)} >
 									<div className="card" style={{ height: "100%" }}>
 										<img
 											src={product.image}
@@ -139,14 +140,15 @@ export const HomePage = ({ data = [] }) => {
 										>
 											+
 										</span>
-										<div className="card-body">
+									</div>
+										<div className="card-body p-2 ">
 											<p className="card-text">{product.category?.name}</p>
 											<p className="card-title">{product.name}</p>
 											<p className="card-text">{product.title}</p>
 											<p className="card-text">Price: ${product.price}</p>
 										</div>
-									</div>
 								</div>
+								</>
 							))}
 						</div>
 					</div>
