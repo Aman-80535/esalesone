@@ -43,7 +43,7 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
     }
   }
 
-  function toOrderPage(){
+  function toOrderPage() {
     togglePopup();
     router.push('/order')
   }
@@ -84,6 +84,7 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
                       />
                     </div>
                     <p>{item.title}</p>
+                    <p>Size: <b>{item?.size}</b> </p>
                     <div>
                       <button
                         style={{ float: "right", color: "black" }}
@@ -91,7 +92,7 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
                       >
                         X
                       </button>
-                      <p>${item.price}</p>
+                      <p><b>Rs. {item.price}</b></p>
                     </div>
 
                     <div
@@ -113,12 +114,12 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
                   </div>
                 ))}
                 <hr />
-            {items?.length > 0 && 
-               <p>
-               Total: $
-               {items?.reduce((total, item) => total + item.quantity * item.price, 0)}
-             </p>
-            } 
+                {items?.length > 0 &&
+                  <p>
+                    Total: $
+                    {items?.reduce((total, item) => total + item.quantity * item.price, 0)}
+                  </p>
+                }
               </>
             ) : (
               <div>Please Login...</div>
@@ -128,7 +129,7 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
             <div className="d-flex gap-4 align-text-center px-4">
 
               <button onClick={togglePopup}>Close</button>
-              {items?.length > 0 &&  <button onClick={toOrderPage}>Order Now</button>} 
+              {items?.length > 0 && <button onClick={toOrderPage}>Order Now</button>}
             </div>
 
 

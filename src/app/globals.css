@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--global-background);
+  color: var(--foreground);
+
+}
+
 :root {
   --root-background: #ffffff;
   --foreground: #171717;
@@ -170,7 +178,10 @@ button.nav-link {
 }
 
 
-
+.login-form-head {
+  width: 100%;
+  max-width: 38rem;
+}
 
 
 @media (prefers-color-scheme: dark) {

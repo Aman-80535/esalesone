@@ -115,7 +115,6 @@ export const HomePage = ({ data = [] }) => {
 					<div className=" mt-4">
 						<div className="row">
 							{(filteredData).map((product) => (
-								<>
 								<div className="card-parent col-lg-3 d-flex flex-col col-md-4 col-sm-6 col-6 mb-4" key={product.id} onClick={() => handleClick(product.id)} >
 									<div className="card" style={{ height: "100%" }}>
 										<img
@@ -124,7 +123,7 @@ export const HomePage = ({ data = [] }) => {
 											className="card-img-top"
 											style={{ height: "200px", objectFit: "cover" }}
 										/>
-										<span
+										{/* <span
 											style={{
 												position: "absolute",
 												top: "10px",
@@ -139,17 +138,17 @@ export const HomePage = ({ data = [] }) => {
 											onClick={(e) => handleAddToCart(e, product)}
 										>
 											+
-										</span>
+										</span> */}
 									</div>
 										<div className="card-body p-2 ">
 											<p className="card-text">{product.category?.name}</p>
 											<p className="card-title">{product.name}</p>
 											<p className="card-text">{product.title}</p>
-											<p className="card-text">Price: ${product.price}</p>
+											<p className="card-text off"><span>Current Off: </span><b>56%</b></p>
+											<p className="card-text">Price: <b>${product.price}</b></p>
 										</div>
 								</div>
-								</>
-							))}
+								))}
 						</div>
 					</div>
 				</div>

@@ -45,7 +45,7 @@ const cartSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        
+
         state.loading = false;
         state.orderList = action.payload;
       })
@@ -98,7 +98,8 @@ const cartSlice = createSlice({
         state.loading = true;
 
         // Optimistically remove the item from the UI
-        state.items = state.items.filter(item => item.id !== action.meta.arg.id);
+        state.items = state.items.filter(item => item.id !== action.meta.arg);
+
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
         state.loading = false;

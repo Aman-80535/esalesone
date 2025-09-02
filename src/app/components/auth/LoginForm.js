@@ -70,7 +70,7 @@ export const LoginForm = () => {
 	};
 
 	return (
-		<div>
+		<div className="items-center d-flex flex-col px-2">
 			{error && (
 				<div
 					className="error-container"
@@ -85,11 +85,12 @@ export const LoginForm = () => {
 					{error}
 				</div>
 			)}
-			<div style={{ maxWidth: "400px", margin: "50px auto", textAlign: "center" }}>
+			<div className="mx-2 center login-form-head" style={{ maxWidth: "400px", margin: "50px auto", textAlign: "center" }}>
 				<h2>Login</h2>
 				<form onSubmit={handleSubmit}>
 					<div style={{ marginBottom: "15px" }}>
 						<input
+							className="rounded-xl"
 							type="email"
 							name="email"
 							placeholder="Email"
@@ -101,6 +102,7 @@ export const LoginForm = () => {
 					</div>
 					<div style={{ marginBottom: "15px" }}>
 						<input
+							className="rounded-xl"
 							type="password"
 							name="password"
 							placeholder="Password"
@@ -112,8 +114,10 @@ export const LoginForm = () => {
 					</div>
 					<div>
 						<button
+							className="rounded-xl"
 							type="submit"
 							style={{
+								borderRadius: "13px",
 								width: "100%",
 								padding: "10px",
 								backgroundColor: "#4CAF50",
@@ -126,8 +130,9 @@ export const LoginForm = () => {
 						</button>
 						<Link href="/auth/signup" >
 							<button
-								className="mt-3"
+								className="mt-3 rounded-xl"
 								style={{
+									borderRadius: "13px",
 									width: "100%",
 									padding: "10px",
 									backgroundColor: "#4CAF50",
@@ -141,8 +146,8 @@ export const LoginForm = () => {
 						</Link>
 					</div>
 				</form>
-			</div>
-		</div>
+			</div >
+		</div >
 	);
 };
 

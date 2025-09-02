@@ -22,7 +22,6 @@ const userSlice = createSlice({
       state.userData = action.payload;
     },
     setToken: (state, action) => {
-      console.log("token settedd", action.payload);
       state.token = action.payload;
     },
     filterProducts: (state, action) => {

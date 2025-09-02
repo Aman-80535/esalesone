@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc, arrayRemove, orderBy, serverTimestamp, arrayUnion, updateDoc, collection, query, where, deleteDoc, addDoc, getDocs } from 'firebase/firestore';
 import { getAuth } from "firebase/auth";
-import { getUserUID, simpleNotify, waitForUser } from '@/utils/common';
+import { errorNotify, getUserUID, simpleNotify, waitForUser } from '@/utils/common';
 import { app } from '@/firebase';
 import { db } from '@/firebase';
 import { date } from 'zod';
@@ -60,7 +60,7 @@ export const addToCart = createAsyncThunk(
         },
         { merge: true }
       );
-
+      // simpleNotify("Product added");
       return updatedItems; // Return the updated items
     } catch (error) {
       simpleNotify(error.message)
@@ -89,7 +89,7 @@ export const addOrder = createAsyncThunk(
       const savedDoc = await getDoc(docRef);
 
       alert(`Order placed to:\n${orderData?.address}`);
-      return { id: docRef.id,...savedDoc.data(),  date: savedDoc.data().date.toDate().toISOString() };
+      return { id: docRef.id, ...savedDoc.data(), date: savedDoc.data().date.toDate().toISOString() };
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -172,6 +172,7 @@ export const removeFromCart = createAsyncThunk(
         throw new Error("Cart not found");
       }
     } catch (error) {
+      console.log(error, "error in remove from cart")
       return rejectWithValue(error.message);
     }
   }

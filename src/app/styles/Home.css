@@ -42,9 +42,12 @@
   min-width: 259px;
 }
 
+.off{
+  
+}
+
 .card:hover {
-  transform: scale(1.05);
-  /* Zoom effect on hover */
+  /* transform: scale(1.5); */
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
 }
 
