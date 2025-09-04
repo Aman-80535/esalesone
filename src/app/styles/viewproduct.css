@@ -4,3 +4,10 @@
 .product-view-container{
     background-color: var(--global-background);
 }
+.selected-color{
+    border: 4px solid green !important;
+}
+.color-selection{
+
+    cursor: pointer !important;
+}

@@ -1,25 +1,29 @@
 "use client"
 
 import { addToCart, decrementQuantity, fetchCart, incrementQuantity, removeFromCart } from '@/redux/cart/cartAction';
-import { errorNotify, simpleNotify } from '@/utils/common';
+import { checkEmptiness, errorNotify, simpleNotify } from '@/utils/common';
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import BackButton from './BackBUtton';
 import { useRouter } from 'next/navigation';
+import "../styles/viewproduct.css"
 
 const ProductPage = ({ product }) => {
 	const dispatch = useDispatch();
 	const router = useRouter();
-	const [selectedSize, setSelected] = useState('');
+	const [size, setSelected] = useState('');
+	const [color, setSelectedColor] = useState('');
 	const [productCartData, setproductCartData] = useState(null);
+	const [errors, setErrors] = useState(null);
 	const { items, error, loading } = useSelector((state) => state.cart);
 
 	const addToCartProduct = async () => {
+		if (checkEmptiness({ size }, setErrors)) return;
 		try {
-			const addd = await dispatch(addToCart({ ...product, size: selectedSize, quantity: 1 }));
+			const addd = await dispatch(addToCart({ ...product, size: size, quantity: 1 }));
 		} catch (error) {
 			console.error("Error fetching products:", error.message);
-			errorNotify("Something went wrong while adding to cart");
+			// errorNotify("Something went wrong while adding to cart");
 		}
 	};
 
@@ -28,8 +32,10 @@ const ProductPage = ({ product }) => {
 	}, [items])
 
 	const handleAddToCart = async () => {
+		if (checkEmptiness({ size }, setErrors)) return;
 		addToCartProduct();
 	};
+	console.log(errors, "errors")
 
 	const removeItemFromCart = async (itemID) => {
 		try {
@@ -55,6 +61,7 @@ const ProductPage = ({ product }) => {
 	}
 	const handleIncrement = async (itemID, qty = 0) => {
 		try {
+			if (checkEmptiness({ size }, setErrors)) return;
 			if (qty === 0) return handleAddToCart();
 			await dispatch(incrementQuantity(itemID))
 		}
@@ -63,7 +70,6 @@ const ProductPage = ({ product }) => {
 		}
 	}
 
-	console.log(productCartData?.quantity, "qqqproductCartData")
 	return (
 		<div className="product-view-container flex justify-center items-center min-h-screen bg-gray-100 py-5 px-4">
 			<div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -107,44 +113,49 @@ const ProductPage = ({ product }) => {
 							</p>
 
 							{/* Colors */}
-							<div>
+							{/* <div>
 								<span className="font-semibold text-gray-700">Available Colors:</span>
+									{errors?.color && <div className='error-normal'>{errors?.color} !</div>}
 								<div className="flex gap-2 mt-2">
-									{product.colors?.map((color, idx) => (
+									{product.colors?.map((colorr, idx) => (
 										<span
+											onClick={() => setSelectedColor(colorr)}
 											key={idx}
-											className="w-6 h-6 rounded-full border shadow-sm"
-											style={{ backgroundColor: color }}
+											className={`${color === colorr ? "selected-color" : ""} color-selection w-6 h-6 rounded-full border shadow-sm`}
+											style={{ backgroundColor: colorr }}
 										></span>
+
 									)) || (
 											<>
-												<span className="w-6 h-6 rounded-full bg-red-500 border shadow-sm"></span>
-												<span className="w-6 h-6 rounded-full bg-blue-500 border shadow-sm"></span>
-												<span className="w-6 h-6 rounded-full bg-black border shadow-sm"></span>
+												<span onClick={() => setSelectedColor("red")} className={` ${color === "red" ? "selected-color " : ""} color-selection w-6 h-6 rounded-full bg-red-500  shadow-sm`}></span>
+
+												<span onClick={() => setSelectedColor("blue")} className={`${color === "blue" ? "selected-color " : ""} color-selection w-6 h-6 rounded-full bg-blue-500  shadow-sm`}></span>
+												<span onClick={() => setSelectedColor("black")} className={`${color === "black" ? "selected-color " : ""} color-selection w-6 h-6 rounded-full bg-black  shadow-sm`}></span>
 											</>
 										)}
 								</div>
-							</div>
+							</div> */}
 
 							{/* Sizes */}
 							<div>
 								<span className="font-semibold text-gray-700">Sizes:</span>
 								<div className="flex gap-3 mt-2">
-									{["S", "M", "L", "XL"].map((size) => (
+									{["S", "M", "L", "XL"].map((sizee) => (
 										<span
-											onClick={() => setSelected(size)}
-											key={size}
-											className={`px-3 py-1 border rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer ${selectedSize === size ? 'bg-gray-200 border-black font-semibold' : ''}`}
+											onClick={() => setSelected(sizee)}
+											key={sizee}
+											className={`px-3 py-1 border rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer ${sizee === size ? 'bg-gray-200 border-black font-semibold' : ''}`}
 										>
-											{size}
+											{sizee}
 										</span>
 									))}
 								</div>
+								{errors?.size && <div className='error-normal'>{errors?.size}</div>}
 							</div>
 						</div>
 
 						{/* Description */}
-						<p className="mt-6 text-gray-600 leading-relaxed">
+						<p className="mt-3 text-gray-600 leading-relaxed">
 							{product.description}
 						</p>
 

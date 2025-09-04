@@ -26,7 +26,7 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData 
     } = useForm({
         resolver: zodResolver(schema),
     });
-    const router= useRouter();
+    const router = useRouter();
 
 
     const onSubmit = (data) => {
@@ -84,13 +84,13 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData 
             </div>
 
 
-            <div style={{width: '300px', alignSelf: 'center'}} className=" mt-3 d-flex gap-3">
-                <button className="btn btn-secondary w-100" onClick={handleRedirect}>
+            <div style={{  alignSelf: 'center' }} className=" mt-3 d-flex gap-3">
+                <button className="btn btn-secondary" onClick={handleRedirect}>
                     Cancel
                 </button>
             </div>
 
-            <button type="submit" style={{width: '300px', alignSelf: 'center'}} className="mt-3 bg-blue-600 text-black px-4 py-2 rounded">
+            <button type="submit" style={{  alignSelf: 'center' }} className="mt-3 bg-blue-600 text-black px-4 py-2 rounded">
                 Order Now
             </button>
         </form>

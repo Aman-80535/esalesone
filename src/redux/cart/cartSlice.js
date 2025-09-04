@@ -76,7 +76,6 @@ const cartSlice = createSlice({
       .addCase(addToCart.rejected, (state, action) => {
         state.loading = false;
 
-        const failedItem = action.meta.arg;
         const index = state.items.findIndex(item => item.id === failedItem.id);
 
         if (index > -1) {
@@ -88,7 +87,6 @@ const cartSlice = createSlice({
           }
         }
 
-        state.error = action.payload;
       })
 
 

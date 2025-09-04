@@ -89,3 +89,15 @@ export const failedOrdertext = (order) => `
 <p>Regards,<br />Shopicart</p>
 
     `;
+
+
+
+export const checkEmptiness = (obj, setErrors) => {
+  for (const key in obj) {
+    if (obj[key] === '' || obj[key] === null || obj[key] === undefined) {
+      setErrors(prev => ({ ...prev, [key]: `Please select ${key}` }));
+      return true;
+    }
+  }
+  return false;
+};

@@ -83,8 +83,19 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
                         className="float-start"
                       />
                     </div>
-                    <p>{item.title}</p>
-                    <p>Size: <b>{item?.size}</b> </p>
+                    <div className="d-flex flex-column gap-1 justify-center">
+                      <p>{item.title}</p>
+                      <p>Size: <b>{item?.size}</b> </p>
+                      <div className="d-flex align-items-end justify-center mt-2">
+                        {item?.color && (
+                          <>
+                            <p>color: <b>{item?.color}</b></p> <p className="w-6 h-6 ml-2" style={{ background: `${item?.color}`, border: `1px solid`, borderRadius: "100%" }}></p  >
+                          </>
+                        )}
+                      </div>
+                      <p><b>Rs. {item.price}</b></p>
+
+                    </div>
                     <div>
                       <button
                         style={{ float: "right", color: "black" }}
@@ -92,7 +103,6 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
                       >
                         X
                       </button>
-                      <p><b>Rs. {item.price}</b></p>
                     </div>
 
                     <div
