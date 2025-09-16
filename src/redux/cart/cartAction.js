@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, setDoc, arrayRemove, orderBy, serverTimestamp, arrayUnion, updateDoc, collection, query, where, deleteDoc, addDoc, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, arrayRemove, orderBy, serverTimestamp, arrayUnion, updateDoc, collection, query, where, deleteDoc, addDoc, getDocs, Timestamp } from 'firebase/firestore';
 import { getAuth } from "firebase/auth";
 import { errorNotify, getUserUID, simpleNotify, waitForUser } from '@/utils/common';
 import { app } from '@/firebase';
@@ -74,26 +74,121 @@ export const addOrder = createAsyncThunk(
   async (orderData, thunkAPI) => {
     try {
       const user = auth.currentUser;
-      const userid = user?.uid || user_uid; // Fallback to localStorage
+      const userid = user?.uid || localStorage.getItem('user_uid');
 
       if (!userid) {
         return thunkAPI.rejectWithValue('User not authenticated');
       }
-      // Add order to Firestore
-      const ordersRef = collection(db, 'orders');
-      const docRef = await addDoc(ordersRef, { ...orderData, user_uid: userid, date: serverTimestamp() });
 
-      // Delete cart items for this user
+      const now = Timestamp.now();
+      const twentyFourHoursAgo = Timestamp.fromMillis(now.toMillis() - 24 * 60 * 60 * 1000);
+
+      const batchAssignments = [];
+      const batchUpdates = []; // To store batch IDs for later update
+
+      for (const item of orderData.items) {
+        const productId = item.id;
+        const title = item.title;
+
+        const batchQuery = query(
+          collection(db, 'batches'),
+          where('productId', '==', productId),
+          where('created_at', '>=', twentyFourHoursAgo)
+        );
+
+        const batchSnap = await getDocs(batchQuery);
+        let batchId = '';
+        let batchDocRef;
+
+        if (!batchSnap.empty) {
+          const batchDoc = batchSnap.docs[0];
+          batchId = batchDoc.id;
+          batchDocRef = doc(db, 'batches', batchId);
+
+          // Store for later update
+          batchUpdates.push({
+            ref: batchDocRef,
+            item
+          });
+
+          await updateDoc(batchDocRef, {
+            total_quantity: (batchDoc.data().total_quantity || 0) + item.quantity,
+            [`sizing_breakdown.${item.size || 'default'}`]: (
+              (batchDoc.data().sizing_breakdown?.[item.size || 'default'] || 0) + item.quantity
+            ),
+          });
+
+        } else {
+          const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, '');
+          batchId = `BATCH-${dateStr}-${productId}`;
+          const sizingBreakdown = {
+            [item.size || 'default']: item.quantity
+          };
+
+          batchDocRef = doc(db, 'batches', batchId);
+
+          await setDoc(batchDocRef, {
+            batch_id: batchId,
+            created_at: serverTimestamp(),
+            productId,
+            product_title: title,
+            category: item.category || '',
+            status: 'pending',
+            order_ids: [], // temporarily empty
+            total_quantity: item.quantity,
+            sizing_breakdown: sizingBreakdown
+          });
+
+          batchUpdates.push({
+            ref: batchDocRef,
+            item
+          });
+        }
+
+        batchAssignments.push({
+          ...item,
+          batch_id: batchId
+        });
+      }
+
+      // STEP: Save order with updated items
+      const ordersRef = collection(db, 'orders');
+      const docRef = await addDoc(ordersRef, {
+        ...orderData,
+        user_uid: userid,
+        items: batchAssignments,
+        date: serverTimestamp()
+      });
+
+      // STEP: Now that we have order ID, update batches with it
+      for (const { ref } of batchUpdates) {
+        const batchSnap = await getDoc(ref);
+        const existingOrderIds = batchSnap.data().order_ids || [];
+        await updateDoc(ref, {
+          order_ids: Array.from(new Set([...existingOrderIds, docRef.id])) // prevent duplicates
+        });
+      }
+
+      // STEP: Delete user's cart
       const cartDocRef = doc(db, 'carts', userid);
       await deleteDoc(cartDocRef);
+
       const savedDoc = await getDoc(docRef);
 
       alert(`Order placed to:\n${orderData?.address}`);
-      return { id: docRef.id, ...savedDoc.data(), date: savedDoc.data().date.toDate().toISOString() };
+
+      return {
+        id: docRef.id,
+        ...savedDoc.data(),
+        date: savedDoc.data().date.toDate().toISOString()
+      };
+
     } catch (error) {
+      console.error('addOrder error:', error);
       return thunkAPI.rejectWithValue(error.message);
     }
-  });
+  }
+);
 
 export const fetchUserOrders = createAsyncThunk(
   'orders/fetchUserOrders',
