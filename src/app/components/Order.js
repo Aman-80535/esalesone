@@ -45,7 +45,7 @@ export default function ProductDetails() {
 		return { success: true };
 	}
 
-
+console.log(items)
 	async function createOrder(token = {}) {
 		setOrderInprocess(true);
 		try {

@@ -82,8 +82,8 @@ const ProductPage = ({ product }) => {
 					{/* Left: Product Image */}
 					<div className="flex justify-center items-center">
 						<img
-							src={product.image}
-							alt={product.title}
+							src={product?.image}
+							alt={product?.title}
 							className="w-72 h-72 object-contain rounded-lg shadow-md border bg-gray-50 p-4"
 						/>
 					</div>
@@ -92,24 +92,24 @@ const ProductPage = ({ product }) => {
 					<div className="flex flex-col">
 						{/* Title + Manufacturer */}
 						<div>
-							<h1 className="text-3xl font-bold text-gray-800">{product.title}</h1>
+							<h1 className="text-3xl font-bold text-gray-800">{product?.title}</h1>
 							<p className="text-gray-500 mt-1">
-								by {product.manufacturer || "Generic Brand"}
+								by {product?.manufacturer || "Generic Brand"}
 							</p>
 						</div>
 
 						{/* Price + Demand */}
 						<div className="mt-4">
-							<p className="text-2xl font-semibold text-green-600">₹{product.price}</p>
+							<p className="text-2xl font-semibold text-green-600">₹{product?.price}</p>
 							<p className="text-sm text-orange-500 mt-1">
-								🔥 In demand: {product.demandPercentage || 78}%
+								🔥 In demand: {product?.demandPercentage || 78}%
 							</p>
 						</div>
 
 						{/* Stock + Colors + Sizes */}
 						<div className="mt-6 space-y-4">
 							<p className="text-gray-700">
-								<span className="font-semibold">Stock:</span> {product.stock || 24} units
+								<span className="font-semibold">Stock:</span> {product?.stock || 24} units
 							</p>
 
 							{/* Colors */}
@@ -156,7 +156,7 @@ const ProductPage = ({ product }) => {
 
 						{/* Description */}
 						<p className="mt-3 text-gray-600 leading-relaxed">
-							{product.description}
+							{product?.description}
 						</p>
 
 						{/* Manufacturer Location */}
@@ -186,7 +186,7 @@ const ProductPage = ({ product }) => {
 								</button>
 								<div className='p-2'><p><b>{productCartData?.quantity || 0}</b></p></div>
 								{/* {loading ? "..." : productCartData?.quantity ? productCartData?.quantity : 0} */}
-								<button style={{ background: "var(--global-background)", width: "39px", height: "39px", borderRadius: "50%" }} onClick={() => handleIncrement(product.id, productCartData?.quantity)}>+</button>
+								<button style={{ background: "var(--global-background)", width: "39px", height: "39px", borderRadius: "50%" }} onClick={() => handleIncrement(product?.id, productCartData?.quantity)}>+</button>
 							</div>
 						</div>
 					</div>

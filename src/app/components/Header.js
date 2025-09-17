@@ -91,7 +91,7 @@ export const Header = () => {
 								<>
 									<Link href="/myorders" className="fa-box relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
 										<FaBox className="w-6 h-6" />
-										<span class="hidden-text-fa-box">My Orders</span>
+										<span className="hidden-text-fa-box">My Orders</span>
 									</Link>
 
 								</>

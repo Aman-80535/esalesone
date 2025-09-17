@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { db, app } from '../../firebase';
-import { doc, getDoc, setDoc, arrayRemove, arrayUnion, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, arrayRemove, arrayUnion, updateDoc, query, getDocs, collection } from 'firebase/firestore';
 import { getAuth, signOut } from "firebase/auth";
 import { simpleNotify, waitForUser } from '@/utils/common';
 import Cookies from 'js-cookie';
@@ -13,7 +13,7 @@ export const fetchUserData = createAsyncThunk(
   'user/fetchUserData',
   async (_, { rejectWithValue }) => {
 
-    const user = await waitForUser(); 
+    const user = await waitForUser();
 
     if (!user) {
       return rejectWithValue('No user is logged in');
@@ -24,7 +24,7 @@ export const fetchUserData = createAsyncThunk(
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        return  data
+        return data
       } else {
         throw new Error('No user data found');
       }
@@ -44,28 +44,35 @@ export const logoutUser = createAsyncThunk(
       localStorage.removeItem('user_uid')
       await signOut(auth);
       simpleNotify("Log out successfully!")
-      return; 
+      return;
     } catch (error) {
-      return rejectWithValue(error.message); 
+      return rejectWithValue(error.message);
     }
   }
 );
 
 
 export const fetchProducts = createAsyncThunk(
-  "/products",
-  async (userId, thunkAPI) => {
+  'user/fetchProducts',
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(`https://fakestoreapi.com/products`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch products data");
+      const q = query(collection(db, "products"));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        throw new Error('No products data found');
       }
-      const data = await response.json();
+
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log(data, "Fetched products");
       return data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
+      console.log("Error in fetchProducts:", error);
+      return rejectWithValue(error.message || "Unknown error");
     }
   }
 );
-
 

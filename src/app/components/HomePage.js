@@ -140,15 +140,15 @@ export const HomePage = ({ data = [] }) => {
 											+
 										</span> */}
 									</div>
-										<div className="card-body p-2 ">
-											<p className="card-text">{product.category?.name}</p>
-											<p className="card-title">{product.name}</p>
-											<p className="card-text">{product.title}</p>
-											<p className="card-text off"><span>Current Off: </span><b>56%</b></p>
-											<p className="card-text">Price: <b>${product.price}</b></p>
-										</div>
+									<div className="card-body p-2 ">
+										<p className="card-text">{product.category?.name}</p>
+										<p className="card-title">{product.name}</p>
+										<p className="card-text">{product.title}</p>
+										<p className="card-text off"><span>Current Off: </span><b>56%</b></p>
+										<p className="card-text">Price: <b>${product.price}</b></p>
+									</div>
 								</div>
-								))}
+							))}
 						</div>
 					</div>
 				</div>
