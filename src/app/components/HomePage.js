@@ -115,11 +115,12 @@ export const HomePage = () => {
 				<div className="internal-container px-4 py-2">
 					<div className=" mt-4">
 						<div className="row">
-							{(filteredData).map((product) => (
+							{(filteredData).map((product) => 
+							(
 								<div className="card-parent col-lg-3 d-flex flex-col col-md-4 col-sm-6 col-6 mb-4" key={product.id} onClick={() => handleClick(product.id)} >
 									<div className="card" style={{ height: "100%" }}>
 										<img
-											src={product.image}
+											src={product?.images?.[0] || product.image || "/placeholder.png"}
 											alt={product.name}
 											className="card-img-top"
 											style={{ height: "200px", objectFit: "cover" }}
