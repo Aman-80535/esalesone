@@ -14,7 +14,7 @@ import SocialPage from "./SocialPage";
 import Carousel from "./Carausel";
 
 
-export const HomePage = ({ data = [] }) => {
+export const HomePage = () => {
 	const { products: productsData, loading: Loading, error } = useSelector(s => s.user)
 	const products = productsData;
 	const [searchKey, setSearchKey] = useState("");
@@ -92,7 +92,11 @@ export const HomePage = ({ data = [] }) => {
 			<div>
 				<SocialPage />
 			</div>
-			<div className="mb-2" style={{ textAlign: "center", width: "100%" }}>
+			
+			<div className="px-3 header-first flex items-center justify-center py-2">
+				<Carousel />
+			</div>
+			<div className="mb-2 mt-3" style={{ textAlign: "center", width: "100%" }}>
 				<input
 					className="text-center search-product"
 					placeholder="Search your Product"
@@ -106,9 +110,6 @@ export const HomePage = ({ data = [] }) => {
 					value={searchKey}
 					onChange={(event) => handleSearch(event.target.value)}
 				/>
-			</div>
-			<div className="px-3 header-first flex items-center justify-center py-2">
-				<Carousel />
 			</div>
 			<div className="main-container py-2 px-3 mt-3">
 				<div className="internal-container px-4 py-2">
