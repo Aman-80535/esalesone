@@ -45,7 +45,7 @@ export default function Carousel({ action }) {
 
                         {/* Content overlay */}
                         <div className="absolute left-20 top-1/2 -translate-y-1/2 text-white max-w-lg">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight drop-shadow">Men's Classic Collection</h2>
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight drop-shadow">Men&apos;s Classic Collection</h2>
                             <p className="mt-2 text-sm md:text-base text-white/90">Premium fits, timeless styles — discover jackets, shirts and essentials.</p>
                             <div className="mt-4 flex items-center gap-3">
                                 <href className="shop-cta px-5 py-2 rounded-md font-semibold" href={action}>Shop Men's</href>

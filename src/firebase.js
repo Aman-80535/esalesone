@@ -20,8 +20,7 @@ const firebaseConfig = {
 if (process.env.NODE_ENV !== 'production') {
   const missing = Object.entries(firebaseConfig).filter(([, v]) => !v).map(([k]) => k);
   if (missing.length) {
-    // eslint-disable-next-line no-console
-    console.warn('Missing Firebase environment variables:', missing.join(', '));
+    console.warn("Missing Firebase environment variables:", missing.join(', '));
   }
 }
 
