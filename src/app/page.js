@@ -18,5 +18,5 @@ async function getProducts() {
 export default async function Home() {
   const products = await getProducts();
 
-  return <HomePage data={products} />;
+  return <HomePage  />;
 }
