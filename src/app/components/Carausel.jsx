@@ -8,7 +8,7 @@ const images = [
     "https://images.pexels.com/photos/428338/pexels-photo-428338.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
 ];
 
-export default function Carousel() {
+export default function Carousel({ action }) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Auto slide every 4s
@@ -48,8 +48,8 @@ export default function Carousel() {
                             <h2 className="text-3xl md:text-4xl font-bold tracking-tight drop-shadow">Men's Classic Collection</h2>
                             <p className="mt-2 text-sm md:text-base text-white/90">Premium fits, timeless styles — discover jackets, shirts and essentials.</p>
                             <div className="mt-4 flex items-center gap-3">
-                                <button className="shop-cta px-5 py-2 rounded-md font-semibold">Shop Men's</button>
-                                <button className="shop-outline px-4 py-2 rounded-md">Explore</button>
+                                <href className="shop-cta px-5 py-2 rounded-md font-semibold" href={action}>Shop Men's</href>
+                                <href className="shop-outline px-4 py-2 rounded-md"  href={action}>Explore</href>
                             </div>
                         </div>
                     </div>

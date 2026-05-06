@@ -12,6 +12,7 @@ import { simpleNotify } from "@/utils/common";
 import { useRouter } from "next/navigation";
 import SocialPage from "./SocialPage";
 import Carousel from "./Carausel";
+import { incrementQuantity, decrementQuantity } from '@/redux/cart/cartAction';
 
 
 export const HomePage = () => {
@@ -21,6 +22,8 @@ export const HomePage = () => {
 	const [filteredData, setFilteredData] = useState(products);
 	const [Error, setError] = useState("");
 	const dispatch = useDispatch();
+	const { items: cartItems, loading: cartLoading } = useSelector((s) => s.cart);
+	const [actionLoadingMap, setActionLoadingMap] = useState({});
 	const { loading, setLoading } = useLoader();
 	const router = useRouter()
 
@@ -79,6 +82,24 @@ export const HomePage = () => {
 		addToCartProduct(product);
 	};
 
+	const setActionLoading = (id, value) => setActionLoadingMap(prev => ({ ...prev, [id]: value }));
+
+	const handleIncrementOnCard = async (product) => {
+		setActionLoading(product.id, true);
+		try {
+			await dispatch(incrementQuantity(product.id));
+		} catch (err) { console.error(err); }
+		finally { setActionLoading(product.id, false); }
+	}
+
+	const handleDecrementOnCard = async (product) => {
+		setActionLoading(product.id, true);
+		try {
+			await dispatch(decrementQuantity(product.id));
+		} catch (err) { console.error(err); }
+		finally { setActionLoading(product.id, false); }
+	}
+
 	if (error) {
 		return simpleNotify(error.message)
 	}
@@ -92,9 +113,9 @@ export const HomePage = () => {
 
 
 			<div className="px-3 header-first flex items-center justify-center py-2">
-				<Carousel />
+				<Carousel action={"#search-container"}/>
 			</div>
-			<div className="hidden md:flex flex-1 justify-center mt-5">
+			<div className="hidden md:flex flex-1 justify-center mt-5" id='search-container'>
 				<input
 					className="header-search"
 					placeholder="Search t-shirts, tees, prints..."
@@ -127,14 +148,33 @@ export const HomePage = () => {
 											<p className="card-category">{product.category?.name}</p>
 											<p className="card-title">{product.name}</p>
 											<p className="card-desc">{product.title}</p>
-											<div className="card-meta mt-3 flex items-center justify-between">
+												<div className="card-meta mt-3 flex items-center justify-between">
 												<div>
 													<span className="price">${product.price}</span>
 													{product.mrp && (
 														<span className="mrp">${product.mrp}</span>
 													)}
 												</div>
-												<button className="add-cart-btn" onClick={(e) => handleAddToCart(e, product)}>Add to cart</button>
+
+												{/* Show quantity controls if product exists in cart */}
+												{(() => {
+													const inCart = cartItems?.find(ci => ci.id === product.id);
+													const isActionLoading = actionLoadingMap[product.id];
+													if (inCart && inCart.quantity > 0) {
+														return (
+															<div className="flex items-center gap-3">
+																<button className="rounded-full" style={{ background: "var(--global-background)", width: "36px", height: "36px" }} onClick={() => handleDecrementOnCard(product)} disabled={!!isActionLoading}>
+																{isActionLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> : '-'}
+															</button>
+															<div className="p-1"><b>{inCart.quantity}</b></div>
+															<button className="rounded-full" style={{ background: "var(--global-background)", width: "36px", height: "36px" }} onClick={() => handleIncrementOnCard(product)} disabled={!!isActionLoading}>
+																{isActionLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> : '+'}
+															</button>
+														</div>
+													)
+													}
+													return <button className="add-cart-btn" onClick={(e) => handleAddToCart(e, product)}>Add to cart</button>
+												})()}
 											</div>
 										</div>
 									</div>
