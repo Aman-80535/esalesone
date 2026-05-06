@@ -11,10 +11,6 @@
   /* Center the container */
 }
 
-.main-container {
-  /* container background/spacing maintained */
-}
-
 .internal-container {
   background-color: var(--global-background) !important;
   padding-bottom: 20rem !important;
@@ -126,7 +122,7 @@
 }
 
 /* Responsive product grid: default to 4 columns (desktop), 2 on tablet, 1 on mobile */
-.row{
+.product-grid{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
@@ -134,11 +130,11 @@
 }
 
 @media (max-width: 1024px){
-  .row{ grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .product-grid{ grid-template-columns: repeat(2, 1fr); gap: 16px; }
 }
 
 @media (max-width: 640px){
-  .row{ grid-template-columns: repeat(1, 1fr); gap: 14px; }
+  .product-grid{ grid-template-columns: repeat(1, 1fr); gap: 14px; }
 }
 
 /* Ensure card-media has consistent height so grid rows align nicely */

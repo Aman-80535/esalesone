@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 body {
@@ -5,7 +6,9 @@ body {
   padding: 0;
   background-color: var(--global-background);
   color: var(--foreground);
-
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :root {
@@ -14,16 +17,16 @@ body {
   --global-background: #d8ede8;
   --heading-color: #006e3b;
   --primary-btn-color: #0d493b;
-}
 
-
-* {
-  font-family: "Roboto !important";
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --font-heading: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
 }
 
 :root {
   /* Mobile defaults */
-  --font-family-header: "Poppins", sans-serif;
+  --font-family-header: var(--font-heading);
   --font-size-h1: 1.5rem;
   /* ~24px */
   --font-size-h2: 1.25rem;
@@ -33,9 +36,9 @@ body {
   --font-weight-bold: 700;
   --font-weight-semibold: 600;
 
-  --p-font-size: 0.8rem;
+  --p-font-size: 0.9rem;
   /* ~15px on small screens */
-  --p-line-height: 1.5;
+  --p-line-height: 1.6;
   --p-max-width: 60ch;
 }
 
@@ -53,22 +56,25 @@ body {
 
 /* Apply globally */
 h1 {
-  font-family: var(--font-family-header) !important;
-  font-size: var(--font-size-h1) !important;
-  font-weight: var(--font-weight-bold) !important;
+  font-family: var(--font-family-header);
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 0.5rem 0;
 }
 
 h2 {
-  font-family: var(--font-family-header) !important;
-  font-size: var(--font-size-h2) !important;
-  font-weight: var(--font-weight-semibold) !important;
+  font-family: var(--font-family-header);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 0.5rem 0;
 }
 
 h3 {
-  color: var(--heading-color) !important;
-  font-family: var(--font-family-header) !important;
-  font-size: var(--font-size-h3) !important;
-  font-weight: var(--font-weight-semibold) !important;
+  color: var(--heading-color);
+  font-family: var(--font-family-header);
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 0.5rem 0;
 }
 
 /* Tablet (≥ 768px) */
@@ -127,6 +133,10 @@ p {
   line-height: var(--p-line-height);
   max-width: var(--p-max-width);
   margin-bottom: 1rem;
+}
+
+label, input, textarea, select, button {
+  font-family: var(--font-sans);
 }
 
 .checkout-form-field {

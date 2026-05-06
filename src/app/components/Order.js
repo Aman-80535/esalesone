@@ -157,9 +157,9 @@ console.log(items)
 						<h2 className="text-center fw-bold mb-5">Checkout</h2>
 
 						{/* Cart Products */}
-						<div className="row g-4 justify-content-center">
+						<div className="row row-cols-1 row-cols-md-2 g-4">
 							{products.map((product, idx) => (
-								<div key={idx} className="col-12 col-md-10 col-lg-8">
+								<div key={idx} className="col">
 									<div className="card shadow-sm border-0 rounded-3 h-100">
 										<div className="row g-0 justify-content-center">
 											{/* Product Image */}
@@ -198,11 +198,12 @@ console.log(items)
 						</div>
 
 						{/* Address Input & Summary */}
-						<div className="card shadow-lg border-0 rounded-3 p-4 mx-auto mb-5" style={{ maxWidth: "700px" }}>
+						<div className="card shadow-lg border-0 rounded-3 p-4 mx-auto mb-5" style={{ maxWidth: "100%" }}>
 							<h5 className="text-center mb-3 fw-semibold">Enter Details</h5>
 							<CheckoutAddressForm
 								setShowPopup={setShowPopup}
 								setCheckoutFormData={setCheckoutFormData}
+								grandTotal={grandTotal}
 							/>
 						</div>
 					</div>
