@@ -13,11 +13,20 @@ import { useRouter } from "next/navigation";
 import SocialPage from "./SocialPage";
 import Carousel from "./Carausel";
 import { incrementQuantity, decrementQuantity } from '@/redux/cart/cartAction';
+import { ToastContainer } from "react-toastify";
 
 
 export const HomePage = () => {
+	const [showSplash, setShowSplash] = useState(true);
+
+	useEffect(() => {
+		// show splash for 900ms then hide
+		const t = setTimeout(() => setShowSplash(false), 900);
+		return () => clearTimeout(t);
+	}, []);
 	const { products: productsData, loading: Loading, error } = useSelector(s => s.user)
 	const products = productsData;
+	const [justAddedMap, setJustAddedMap] = useState({});
 	const [searchKey, setSearchKey] = useState("");
 	const [filteredData, setFilteredData] = useState(products);
 	const [Error, setError] = useState("");
@@ -110,10 +119,17 @@ export const HomePage = () => {
 
 	return (
 		<>
+			{showSplash && (
+				<div className="splash-overlay">
+					<div className="splash-logo">Shopi <span className="dot-wrap">{[1, 2, 3].map(i => (
+							<span key={i} className="dot-flashing" />
+						))}</span></div>
+				</div>
+			)}
 
 
 			<div className="px-3 header-first flex items-center justify-center py-2">
-				<Carousel action={"#search-container"}/>
+				<Carousel action={"#search-container"} />
 			</div>
 			<div className="hidden md:flex flex-1 justify-center mt-5" id='search-container'>
 				<input
@@ -127,8 +143,38 @@ export const HomePage = () => {
 
 			<div className="main-container py-2 px-3 mt-3">
 				<div className="internal-container px-4 py-2">
-					<div className=" mt-4">
-						<div className="row" style={{ justifyContent: "center", gap:"80px" }}>
+					{/* Featured / In Demand row */}
+					<div className="featured-section mt-3">
+						<h2 className="featured-title"><img src="/shopi-logo.png" alt="Shopi" className="section-logo" />In Demand</h2>
+						<div className="featured-row">
+							{(products || []).slice(0, 6).map((p) => (
+								<div key={p.id} className="featured-card" onClick={() =>{
+									handleClick(p.id);
+								}}>
+									<div className="featured-media">
+										<img src={p?.images?.[0] || p.image || "/placeholder.png"} alt={p.name} />
+										{p.discount && <span className="discount-badge">{p.discount}% OFF</span>}
+									</div>
+									<div className="featured-body">
+										<div className="featured-name">{p.name}</div>
+										<div className="featured-meta">
+											<div className="featured-price">${Number(p.price || 0).toFixed(2)}</div>
+											<button className="add-cart-btn" onClick={(e) => {
+												e.stopPropagation();
+												handleAddToCart(e, p);
+												// show temporary added message for 2 seconds
+												setJustAddedMap(prev => ({ ...prev, [p.id]: true }));
+												setTimeout(() => setJustAddedMap(prev => { const next = { ...prev }; delete next[p.id]; return next }), 2000);
+											}}> {justAddedMap[p.id] ? 'Added!' : 'Add'}</button>
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+						<div className=" mt-4">
+							<h2 className="featured-title"><img src="/shopi-logo.png" alt="Shopi" className="section-logo" />Usuals</h2>
+						<div className="row" style={{ justifyContent: "center", gap: "80px" }}>
 							{(filteredData).map((product) =>
 							(
 								<div className="card-parent col-lg-3 d-flex flex-col col-md-4 col-sm-6 col-6 mb-4" key={product.id}>
@@ -148,7 +194,7 @@ export const HomePage = () => {
 											<p className="card-category">{product.category?.name}</p>
 											<p className="card-title">{product.name}</p>
 											<p className="card-desc">{product.title}</p>
-												<div className="card-meta mt-3 flex items-center justify-between">
+											<div className="card-meta mt-3 flex items-center justify-between">
 												<div>
 													<span className="price">${product.price}</span>
 													{product.mrp && (
@@ -164,14 +210,14 @@ export const HomePage = () => {
 														return (
 															<div className="flex items-center gap-3">
 																<button className="rounded-full" style={{ background: "var(--global-background)", width: "36px", height: "36px" }} onClick={() => handleDecrementOnCard(product)} disabled={!!isActionLoading}>
-																{isActionLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> : '-'}
-															</button>
-															<div className="p-1"><b>{inCart.quantity}</b></div>
-															<button className="rounded-full" style={{ background: "var(--global-background)", width: "36px", height: "36px" }} onClick={() => handleIncrementOnCard(product)} disabled={!!isActionLoading}>
-																{isActionLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> : '+'}
-															</button>
-														</div>
-													)
+																	{isActionLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> : '-'}
+																</button>
+																<div className="p-1"><b>{inCart.quantity}</b></div>
+																<button className="rounded-full" style={{ background: "var(--global-background)", width: "36px", height: "36px" }} onClick={() => handleIncrementOnCard(product)} disabled={!!isActionLoading}>
+																	{isActionLoading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> : '+'}
+																</button>
+															</div>
+														)
 													}
 													return <button className="add-cart-btn" onClick={(e) => handleAddToCart(e, product)}>Add to cart</button>
 												})()}
