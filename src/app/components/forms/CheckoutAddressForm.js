@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import '../../globals.css'
+import '../../styles/checkout.css'
 import { useRouter } from 'next/navigation';
 
 // Define schema using Zod
@@ -40,59 +41,54 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData 
 
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4 max-w-md mx-auto d-flex justify-content-center flex-column px-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="checkout-form mt-4 max-w-md mx-auto px-4">
             <div className='checkout-form-field'>
                 <label>Full Name</label>
-                <input {...register('fullName')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.fullName?.message}</p>
+                <input {...register('fullName')} className="input-field" />
+                <p className="error-text">{errors.fullName?.message}</p>
             </div>
 
             <div className='checkout-form-field'>
                 <label>Email</label>
-                <input {...register('email')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.email?.message}</p>
+                <input {...register('email')} className="input-field" />
+                <p className="error-text">{errors.email?.message}</p>
             </div>
 
             <div className='checkout-form-field'>
                 <label>Phone Number</label>
-                <input {...register('phone')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.phone?.message}</p>
+                <input {...register('phone')} className="input-field" />
+                <p className="error-text">{errors.phone?.message}</p>
             </div>
 
             <div className='checkout-form-field'>
                 <label>Address</label>
-                <textarea {...register('address')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.address?.message}</p>
+                <textarea {...register('address')} className="input-field" />
+                <p className="error-text">{errors.address?.message}</p>
             </div>
 
             <div className='checkout-form-field'>
                 <label>City</label>
-                <input {...register('city')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.city?.message}</p>
+                <input {...register('city')} className="input-field" />
+                <p className="error-text">{errors.city?.message}</p>
             </div>
 
             <div className='checkout-form-field'>
                 <label>State</label>
-                <input {...register('state')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.state?.message}</p>
+                <input {...register('state')} className="input-field" />
+                <p className="error-text">{errors.state?.message}</p>
             </div>
 
-            <div className='checkout-form-field'>
-                <label>Zip Code</label>
-                <input {...register('zip')} className="w-full border px-2 py-1" />
-                <p className="text-red-500 text-sm">{errors.zip?.message}</p>
+            <div className="checkout-form-field">
+                <div className="form-cta-row">
+                    <button type="button" className="btn-ghost" onClick={() => setShowPopup(false)}>
+                        Cancel
+                    </button>
+
+                    <button type="submit" className="btn-primary-cta">
+                        Order Now
+                    </button>
+                </div>
             </div>
-
-
-            <div style={{  alignSelf: 'center' }} className=" mt-3 d-flex gap-3">
-                <button className="btn btn-secondary" onClick={handleRedirect}>
-                    Cancel
-                </button>
-            </div>
-
-            <button type="submit" style={{  alignSelf: 'center' }} className="mt-3 bg-blue-600 text-black px-4 py-2 rounded">
-                Order Now
-            </button>
         </form>
     );
 }

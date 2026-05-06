@@ -12,6 +12,13 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
   const closePopup = () => setIsOpen(false);
   const router = useRouter();
 
+  // track selected image index per item id
+  const [selectedMap, setSelectedMap] = useState({});
+
+  const selectImage = (itemId, idx) => {
+    setSelectedMap((s) => ({ ...s, [itemId]: idx }));
+  };
+
 
   if (error) {
     console.log(error.message)
@@ -72,75 +79,55 @@ const CartPopup = ({ setIsOpen, isOpen, togglePopup }) => {
             {userData ? (
               <>
                 {items?.map((item) => (
-                  <div key={item?.id} style={{ padding: "0px 0px 18px" }}>
-                    <hr />
+                  <div key={item?.id} className="cart-item">
                     <div>
-                      <img
-                        src={item?.image}
-                        alt=""
-                        width="50px"
-                        height="70px"
-                        className="float-start"
-                      />
-                    </div>
-                    <div className="d-flex flex-column gap-1 justify-center">
-                      <p>{item.title}</p>
-                      <p>Size: <b>{item?.size}</b> </p>
-                      <div className="d-flex align-items-end justify-center mt-2">
-                        {item?.color && (
-                          <>
-                            <p>color: <b>{item?.color}</b></p> <p className="w-6 h-6 ml-2" style={{ background: `${item?.color}`, border: `1px solid`, borderRadius: "100%" }}></p  >
-                          </>
-                        )}
+                      <div className="cart-thumb">
+                        <img src={(item.images && item.images.length) ? item.images[selectedMap[item.id] || 0] : item.image} alt={item?.title} />
                       </div>
-                      <p><b>Rs. {item.price}</b></p>
-
+                      {(item.images && item.images.length > 1) && (
+                        <div className="cart-thumb-list">
+                          {item.images.map((src, i) => (
+                            <img
+                              key={i}
+                              src={src}
+                              alt={`thumb-${i}`}
+                              className={selectedMap[item.id] === i ? 'selected' : ''}
+                              onClick={() => selectImage(item.id, i)}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <button
-                        style={{ float: "right", color: "black" }}
-                        onClick={() => removeItemFromCart(item.id)}
-                      >
-                        X
-                      </button>
-                    </div>
+                    <div className="cart-details">
+                      <p className="cart-title">{item.title}</p>
+                      <div className="cart-meta">Size: <b>{item?.size || '-'}</b></div>
+                      <div className="cart-meta">Price: <b>Rs. {item.price}</b></div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <button
-                        style={{ background: "#ce88a8" }}
-                        onClick={() => handleDecrement(item.id)}
-                      >
-                        -
-                      </button>
-                      <button style={{ background: "grey" }}>{item.quantity}</button>
-                      <button onClick={() => handleIncrement(item.id)}>+</button>
+                      <div className="cart-actions">
+                        <button className="qty-btn" onClick={() => handleDecrement(item.id)}>-</button>
+                        <div className="qty-display">{item.quantity}</div>
+                        <button className="qty-btn" onClick={() => handleIncrement(item.id)}>+</button>
+                        <button className="remove-btn" onClick={() => removeItemFromCart(item.id)}>Remove</button>
+                      </div>
                     </div>
                   </div>
                 ))}
-                <hr />
-                {items?.length > 0 &&
-                  <p>
-                    Total: $
-                    {items?.reduce((total, item) => total + item.quantity * item.price, 0)}
-                  </p>
-                }
+
+                <div className="cart-footer">
+                  <div className="cart-total">
+                    <span>Total</span>
+                    <span>₹{items?.reduce((total, item) => total + item.quantity * item.price, 0)}</span>
+                  </div>
+
+                  <div className="cta-row">
+                    <button className="btn-ghost" onClick={togglePopup}>Close</button>
+                    {items?.length > 0 && <button className="btn-primary-cta" onClick={toOrderPage}>Order Now</button>}
+                  </div>
+                </div>
               </>
             ) : (
               <div>Please Login...</div>
             )}
-
-
-            <div className="d-flex gap-4 align-text-center px-4">
-
-              <button onClick={togglePopup}>Close</button>
-              {items?.length > 0 && <button onClick={toOrderPage}>Order Now</button>}
-            </div>
 
 
           </div>

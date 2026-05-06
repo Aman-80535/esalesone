@@ -49,16 +49,17 @@ export const Header = () => {
 	return (
 		<nav className="nav-main shadow-md header-first">
 			<div className="header-first max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex justify-between h-16 items-center">
+				<div className="flex items-center justify-between h-16 gap-4">
 					{/* Brand */}
-
-
-					<Link href="/" className="brand-head text-xl font-bold ">
-						<h2>Shopi</h2>
+					<Link href="/" className="brand-head flex items-center gap-3 text-xl font-bold">
+						<img src="/shopi-logo.png" alt="Shopi" className="brand-logo" />
+						<span>Shopi</span>
 					</Link>
 
+					{/* Search (desktop) */}
+					
 
-					<div className="nav-bar">
+					<div className="nav-bar flex items-center">
 
 						{/* Mobile Menu Button */}
 						<button
@@ -82,47 +83,36 @@ export const Header = () => {
 						</button>
 
 						{/* Desktop Menu */}
-						<div className="hidden md:flex space-x-6 items-center">
+						<div className="hidden md:flex space-x-4 items-center">
 							{userData?.email && (
-								<span className="text-gray-700">{userData.email}</span>
+								<span className="user-email">{userData.email}</span>
 							)}
 
 							{token && (
-								<>
-									<Link href="/myorders" className="fa-box relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
-										<FaBox className="w-6 h-6" />
-										<span className="hidden-text-fa-box">My Orders</span>
-									</Link>
-
-								</>
+								<Link href="/myorders" className="icon-btn has-tooltip" data-tooltip="My Orders" title="My Orders">
+									<FaBox />
+								</Link>
 							)}
-							{/* My Account */}
-							<Link href="/myaccount" className="profile-icon relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
-								<CgProfile className="w-6 h-6" />
 
+							<Link href="/myaccount" className="icon-btn has-tooltip" data-tooltip="My Account" title="My Account">
+								<CgProfile />
 							</Link>
 
-
-
-							<Link href="#" className="cart-icon relative flex items-center text-gray-700 hover:text-blue-600 text-2xl" onClick={() => setIsOpen(p => !p)}>
-								{/* Cart Icon */}
-								<CiShoppingCart className="w-8 h-8" />
-
-								{/* Badge Counter */}
+							<button className="icon-btn has-tooltip" data-tooltip="Cart" onClick={() => setIsOpen(p => !p)} title="Cart">
+								<CiShoppingCart />
 								{items?.length > 0 && token && (
-									<span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
-										{items.length}
-									</span>
+									<span className="badge">{items?.length}</span>
 								)}
-							</Link>
+							</button>
 						</div>
+
 					</div>
 				</div>
 			</div>
 
 			{/* Mobile Menu */}
 			{isMobileView && isMobileMenuOpen && (
-				<div className="mobile-bar absolute top-15 right-0 md:hidden px-4 py-4 pb-4 space-y-2 bg-gray-50 shadow-md">
+                <div className="mobile-bar absolute top-15 right-0 md:hidden px-4 py-4 pb-4 space-y-3 bg-white/95 backdrop-blur-sm rounded-b-lg shadow-md">
 					{userData?.email && (
 						<span className="block text-gray-700">{userData.email}</span>
 					)}
@@ -131,14 +121,14 @@ export const Header = () => {
 						<>
 							<Link href="/myorders" className="fa-box relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
 								<FaBox className="w-6 h-6" />
-								<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Orders</span>
+								<span className="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Orders</span>
 							</Link>
 						</>
 					)}
 					{/* My Account */}
 					<Link href="/myaccount" className="fa-box profiel-icon cg-mob  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
 						<CgProfile className="w-6 h-6" />
-						<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My profile</span>
+						<span className="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My profile</span>
 
 					</Link>
 
@@ -147,7 +137,7 @@ export const Header = () => {
 					<Link href="#" className="cart-icon  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl" onClick={() => setIsOpen(p => !p)}>
 						{/* Cart Icon */}
 						<CiShoppingCart className="w-8 h-8" />
-						<span class="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Cart</span>
+						<span className="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Cart</span>
 
 
 						{/* Badge Counter */}

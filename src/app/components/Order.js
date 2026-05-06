@@ -103,6 +103,52 @@ console.log(items)
 		return <Loader />
 	}
 
+	// Small gallery component to show multiple images with thumbnails
+	function ImageGallery({ images = [], alt = '' }) {
+		const [selected, setSelected] = useState(0);
+		const imgs = (images && images.length > 0) ? images : [];
+
+		const mainSrc = imgs[selected] || imgs[0] || '/placeholder.png';
+
+		return (
+			<div>
+				<img
+					src={mainSrc}
+					alt={alt}
+					className="img-fluid rounded-start w-100 h-100"
+					style={{ objectFit: 'cover', minHeight: '200px' }}
+				/>
+
+				{imgs.length > 1 && (
+					<div className="d-flex gap-2 mt-2 overflow-auto">
+						{imgs.map((src, i) => (
+							<button
+								key={i}
+								onClick={() => setSelected(i)}
+								className="p-0 border-0 bg-transparent"
+								style={{ cursor: 'pointer' }}
+								aria-label={`View image ${i + 1}`}
+							>
+								<img
+									src={src}
+									alt={`${alt} ${i + 1}`}
+									style={{
+										width: 70,
+										height: 70,
+										objectFit: 'cover',
+										borderRadius: 8,
+										boxShadow: selected === i ? '0 6px 18px rgba(2,6,23,0.12)' : 'none',
+										border: selected === i ? '2px solid #0f6b4a' : '1px solid #e6e6e6'
+									}}
+								/>
+							</button>
+						))}
+					</div>
+				)}
+			</div>
+		);
+	}
+
 	return (
 		<>
 			{!loading && items?.length > 0 && (
@@ -115,15 +161,10 @@ console.log(items)
 							{products.map((product, idx) => (
 								<div key={idx} className="col-12 col-md-10 col-lg-8">
 									<div className="card shadow-sm border-0 rounded-3 h-100">
-										<div className="row g-0">
+										<div className="row g-0 justify-content-center">
 											{/* Product Image */}
 											<div className="col-12 col-md-4">
-												<img
-													src={product.image}
-													alt={product.name}
-													className="img-fluid rounded-start w-100 h-100"
-													style={{ objectFit: "cover", minHeight: "200px" }}
-												/>
+												<ImageGallery images={product.images?.length ? product.images : [product.image]} alt={product.name} />
 											</div>
 
 											{/* Product Details */}

@@ -89,72 +89,63 @@ export const HomePage = () => {
 
 	return (
 		<>
-			<div>
-				<SocialPage />
-			</div>
-			
+
+
 			<div className="px-3 header-first flex items-center justify-center py-2">
 				<Carousel />
 			</div>
-			<div className="mb-2 mt-3" style={{ textAlign: "center", width: "100%" }}>
+			<div className="hidden md:flex flex-1 justify-center mt-5">
 				<input
-					className="text-center search-product"
-					placeholder="Search your Product"
-					style={{
-						textAlignLast: "center",
-						height: "3rem",
-						width: "32%",
-						border: "1px solid",
-						borderRadius: "56px",
-					}}
+					className="header-search"
+					placeholder="Search t-shirts, tees, prints..."
 					value={searchKey}
 					onChange={(event) => handleSearch(event.target.value)}
+					onClick={() => {/* keep for future wiring */ }}
 				/>
 			</div>
+
 			<div className="main-container py-2 px-3 mt-3">
 				<div className="internal-container px-4 py-2">
 					<div className=" mt-4">
-						<div className="row">
-							{(filteredData).map((product) => 
+						<div className="row" style={{ justifyContent: "center", gap:"80px" }}>
+							{(filteredData).map((product) =>
 							(
-								<div className="card-parent col-lg-3 d-flex flex-col col-md-4 col-sm-6 col-6 mb-4" key={product.id} onClick={() => handleClick(product.id)} >
+								<div className="card-parent col-lg-3 d-flex flex-col col-md-4 col-sm-6 col-6 mb-4" key={product.id}>
 									<div className="card" style={{ height: "100%" }}>
-										<img
-											src={product?.images?.[0] || product.image || "/placeholder.png"}
-											alt={product.name}
-											className="card-img-top"
-											style={{ height: "200px", objectFit: "cover" }}
-										/>
-										{/* <span
-											style={{
-												position: "absolute",
-												top: "10px",
-												right: "10px",
-												backgroundColor: "rgba(0, 0, 0, 0.6)",
-												color: "white",
-												borderRadius: "50%",
-												padding: "5px 10px",
-												fontSize: "18px",
-												cursor: "pointer",
-											}}
-											onClick={(e) => handleAddToCart(e, product)}
-										>
-											+
-										</span> */}
-									</div>
-									<div className="card-body p-2 ">
-										<p className="card-text">{product.category?.name}</p>
-										<p className="card-title">{product.name}</p>
-										<p className="card-text">{product.title}</p>
-										<p className="card-text off"><span>Current Off: </span><b>56%</b></p>
-										<p className="card-text">Price: <b>${product.price}</b></p>
+										<div className="card-media" onClick={() => handleClick(product.id)}>
+											<img
+												src={product?.images?.[0] || product.image || "/placeholder.png"}
+												alt={product.name}
+												className="card-img-top"
+												style={{ height: "220px", objectFit: "cover" }}
+											/>
+											{product.discount && (
+												<span className="discount-badge">{product.discount}% OFF</span>
+											)}
+										</div>
+										<div className="card-body p-3 ">
+											<p className="card-category">{product.category?.name}</p>
+											<p className="card-title">{product.name}</p>
+											<p className="card-desc">{product.title}</p>
+											<div className="card-meta mt-3 flex items-center justify-between">
+												<div>
+													<span className="price">${product.price}</span>
+													{product.mrp && (
+														<span className="mrp">${product.mrp}</span>
+													)}
+												</div>
+												<button className="add-cart-btn" onClick={(e) => handleAddToCart(e, product)}>Add to cart</button>
+											</div>
+										</div>
 									</div>
 								</div>
 							))}
 						</div>
 					</div>
 				</div>
-
+				<div>
+					<SocialPage />
+				</div>
 			</div >
 		</>
 	);

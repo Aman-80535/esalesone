@@ -5,8 +5,29 @@ import { checkEmptiness, errorNotify, simpleNotify } from '@/utils/common';
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import BackButton from './BackBUtton';
-import { useRouter } from 'next/navigation';
 import "../styles/viewproduct.css"
+import { useRouter } from 'next/navigation';
+
+// Simple gallery component for product images
+function Gallery({ images = [], title = '' }) {
+	const [selected, setSelected] = useState(0);
+	const imgs = images && images.length ? images : ['/placeholder.png'];
+
+	return (
+		<div className="flex flex-col items-center">
+			<img src={imgs[selected]} alt={title} className="w-72 h-72 object-contain rounded-lg shadow-md border bg-gray-50 p-4" />
+			{imgs.length > 1 && (
+				<div className="flex gap-2 mt-3">
+					{imgs.map((src, i) => (
+						<button key={i} onClick={() => setSelected(i)} className={`p-0 border-0 bg-transparent ${selected === i ? 'ring-2 ring-emerald-500 rounded' : ''}`}>
+							<img src={src} alt={`thumb-${i}`} className="w-14 h-14 object-cover rounded" />
+						</button>
+					))}
+				</div>
+			)}
+		</div>
+	)
+}
 
 const ProductPage = ({ product }) => {
 	const dispatch = useDispatch();
@@ -80,12 +101,18 @@ const ProductPage = ({ product }) => {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
 
 					{/* Left: Product Image */}
-					<div className="flex justify-center items-center">
-						<img
-							src={product?.image}
-							alt={product?.title}
-							className="w-72 h-72 object-contain rounded-lg shadow-md border bg-gray-50 p-4"
-						/>
+					<div className="flex flex-col justify-center items-center">
+						{/* Image gallery: main image + thumbnails */}
+						{/** Use local state to switch images */}
+						{
+							(() => {
+								const imgs = (product?.images && product.images.length) ? product.images : [product?.image];
+								// selected image index state
+								return (
+									<Gallery images={imgs} title={product?.title} />
+								)
+							})()
+						}
 					</div>
 
 					{/* Right: Product Details */}
