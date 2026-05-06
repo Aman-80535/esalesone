@@ -16,7 +16,7 @@ import { incrementQuantity, decrementQuantity } from '@/redux/cart/cartAction';
 import { ToastContainer } from "react-toastify";
 
 
-export const HomePage = () => {
+export const HomePage = ({ products: serverProducts = [] }) => {
 	const [showSplash, setShowSplash] = useState(true);
 
 	useEffect(() => {
@@ -24,8 +24,9 @@ export const HomePage = () => {
 		const t = setTimeout(() => setShowSplash(false), 900);
 		return () => clearTimeout(t);
 	}, []);
-	const { products: productsData, loading: Loading, error } = useSelector(s => s.user)
-	const products = productsData;
+	const { products: productsData = [], loading: Loading, error } = useSelector(s => s.user)
+	// prefer client-side redux products when available, otherwise fall back to server-provided products
+	const products = (productsData && productsData.length) ? productsData : (serverProducts || []);
 	const [justAddedMap, setJustAddedMap] = useState({});
 	const [searchKey, setSearchKey] = useState("");
 	const [filteredData, setFilteredData] = useState(products);
@@ -37,7 +38,8 @@ export const HomePage = () => {
 	const router = useRouter()
 
 	useEffect(() => {
-		// if (typeof window !== 'undefined') {
+		// If redux already has products, skip fetching to avoid redundant network calls
+		if (productsData && productsData.length) return;
 
 		const fetchData = async () => {
 			try {
@@ -51,7 +53,6 @@ export const HomePage = () => {
 		};
 
 		fetchData();
-		// }
 	}, []);
 
 
