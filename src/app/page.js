@@ -5,7 +5,7 @@ import { HomePage } from "./components/HomePage";
 
 async function getProducts() {
   try {
-    const res = await fetch('https://fakestoreapi.com/products', { cache: 'no-store' });
+    // const res = await fetch('https://fakestoreapi.com/products', { cache: 'no-store' });
     const data = await res.json();
     return Array.isArray(data) ? data : [];
 
@@ -16,7 +16,7 @@ async function getProducts() {
 }
 
 export default async function Home() {
-  const products = await getProducts();
+  // const products = await getProducts();
 
   return <HomePage  />;
 }
