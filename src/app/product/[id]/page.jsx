@@ -1,7 +1,6 @@
-
 import React from "react";
 import ProductPage from "@/app/components/ProductPage";
-import '../../styles/viewproduct.css';
+import "../../styles/viewproduct.css";
 import { getProductById } from "@/redux/product/productAction";
 
 async function getProduct(id) {
@@ -10,9 +9,15 @@ async function getProduct(id) {
 }
 
 export default async function ProductViewPage({ params }) {
-  const product = await getProduct(params.id);
+  const resolvedParams = await params;
 
-  return (
-    <ProductPage product={product} />
-  );
+  const id = resolvedParams?.id;
+
+  if (!id) {
+    return <div>Invalid product ID</div>;
+  }
+
+  const product = await getProduct(id);
+
+  return <ProductPage product={product} />;
 }

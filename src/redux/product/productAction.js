@@ -4,6 +4,10 @@ import { doc, getDoc } from "firebase/firestore";
 
 export const getProductById = async (productId) => {
   try {
+    console.log("Getting product with ID:", productId);
+    if (!productId) {
+     throw new Error("Product ID is undefined");
+   }
     const productRef = doc(db, "products", productId);
     const productSnap = await getDoc(productRef);
 
