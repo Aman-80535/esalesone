@@ -166,7 +166,7 @@ export const HomePage = ({ products: serverProducts = [] }) => {
 												// show temporary added message for 2 seconds
 												setJustAddedMap(prev => ({ ...prev, [p.id]: true }));
 												setTimeout(() => setJustAddedMap(prev => { const next = { ...prev }; delete next[p.id]; return next }), 2000);
-											}}> {justAddedMap[p.id] ? 'Added!' : 'Add'}</button>
+											}}> {justAddedMap[p.id] ? "Added!" : "Add"}</button>
 										</div>
 									</div>
 								</div>

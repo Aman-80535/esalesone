@@ -40,7 +40,7 @@ const OrderHistory = () => {
               </p>
               <p>Status: Success</p>
               <p className="card-text">
-                Payment Status: <span className={`${order?.payment ? 'text-success fw-bold' : 'text-danger fw-bold'}`}>{order?.payment ? "✅ Approved Transaction" : 'Pending'}</span>
+                Payment Status: <span className={`${order?.payment ? 'text-success fw-bold' : 'text-danger fw-bold'}`}>{order?.payment ? "✅ Approved Transaction" : "Pending"}</span>
               </p>
               <div className="row">
                 {order?.items?.map((item) => (

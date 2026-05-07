@@ -60,14 +60,14 @@ export const successOrdertext = (order) => ` <h2 style="color: green;">Order Con
   </tr>
 </table>
 
-<p>We’ll notify you when it’s shipped. Thank you for shopping with us!</p>
+<p>We&apos;ll notify you when it&apos;s shipped. Thank you for shopping with us!</p>
 <p>Best regards,<br />Shopicart</p>
     `;
 
 export const failedOrdertext = (order) => `
       <h2 style="color: red;">Order Failed</h2>
 <p>Hi <strong>Customer</strong>,</p>
-<p>We’re sorry, but your order could not be completed.</p>
+<p>We&apos;re sorry, but your order could not be completed.</p>
 
 <table style="border-collapse: collapse;">
   <tr>

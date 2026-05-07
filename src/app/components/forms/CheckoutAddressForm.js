@@ -47,7 +47,7 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData,
         <form onSubmit={handleSubmit(onSubmit)} className="checkout-form checkout-full mt-4">
             <div className="checkout-header">
                 <h3>Shipping Address</h3>
-                <p className="muted">Enter the shipping details. We'll use this address to deliver your order.</p>
+                <p className="muted">Enter the shipping details. We&apos;ll use this address to deliver your order.</p>
             </div>
 
             <div className="checkout-grid">
@@ -137,7 +137,7 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData,
                             </button>
                         </div>
                     </div>
-                    <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>We’ll never share your details. Secure payment and easy returns.</p>
+                    <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>We&apos;ll never share your details. Secure payment and easy returns.</p>
                 </aside>
             </div>
         </form>
