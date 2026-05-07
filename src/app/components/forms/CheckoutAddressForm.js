@@ -53,13 +53,13 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData,
             <div className="checkout-grid">
                 <div className="checkout-left">
                     <div className='checkout-form-field row-2'>
-                        <div>
+                        <div className='name-block'>
                             <label>Full Name</label>
                             <input placeholder="John Doe" {...register('fullName')} className="input-field" />
                             <p className="error-text">{errors.fullName?.message}</p>
                         </div>
 
-                        <div>
+                        <div className='phone-block'>
                             <label>Phone</label>
                             <input placeholder="1234567890" {...register('phone')} className="input-field" />
                             <p className="error-text">{errors.phone?.message}</p>
@@ -79,15 +79,15 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData,
                     </div>
 
                     <div className='checkout-form-field row-2'>
-                        <div>
+                        <div className='city-block'>
                             <label>City</label>
                             <input {...register('city')} className="input-field" />
                             <p className="error-text">{errors.city?.message}</p>
                         </div>
 
-                        <div>
+                        <div className='state-zip-block'>
                             <label>State / ZIP</label>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ display: 'flex', gap: '8px' }} className='zip-state'>
                                 <input {...register('state')} className="input-field" style={{ flex: 1 }} placeholder="State" />
                                 <input {...register('zip')} className="input-field" style={{ width: '88px' }} placeholder="ZIP" />
                             </div>
@@ -113,9 +113,9 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData,
                         </select>
                     </div>
 
-                    <div className='checkout-form-field' style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div className='checkout-form-field saveaddressblock' style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <input id="saveAddress" type="checkbox" checked={saveAddress} onChange={() => setSaveAddress(s => !s)} />
-                        <label htmlFor="saveAddress">Save this address for faster checkout</label>
+                        <label htmlFor="saveAddress" className='saveAddress'>Save this address for faster checkout</label>
                     </div>
                 </div>
 
@@ -139,6 +139,49 @@ export default function CheckoutAddressForm({ setShowPopup, setCheckoutFormData,
                     </div>
                     <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>We&apos;ll never share your details. Secure payment and easy returns.</p>
                 </aside>
+
+                <div className="summary-grid">
+                    <div className="summary-item">
+                        <span>Items</span>
+                        <strong>3</strong>
+                    </div>
+
+                    <div className="summary-item">
+                        <span>Subtotal</span>
+                        <strong>${grandTotal.toFixed(2)}</strong>
+                    </div>
+
+                    <div className="summary-item">
+                        <span>Shipping</span>
+                        <strong>
+                            {shippingMethod === "express"
+                                ? "$9.99"
+                                : shippingMethod === "pickup"
+                                    ? "$0.00"
+                                    : "$4.99"}
+                        </strong>
+                    </div>
+
+                       <div className="summary-item">
+                        <span>Discount</span>
+                        <strong>- $0.00</strong>
+                    </div>
+
+                    <div className="summary-item highlight">
+                        <span>Total</span>
+                        <strong>
+                            $
+                            {(
+                                grandTotal +
+                                (shippingMethod === "express"
+                                    ? 9.99
+                                    : shippingMethod === "pickup"
+                                        ? 0
+                                        : 4.99)
+                            ).toFixed(2)}
+                        </strong>
+                    </div>
+                </div>
             </div>
         </form>
     );
