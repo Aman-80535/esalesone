@@ -1,304 +1,194 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, setDoc, arrayRemove, orderBy, serverTimestamp, arrayUnion, updateDoc, collection, query, where, deleteDoc, addDoc, getDocs, Timestamp } from 'firebase/firestore';
-import { getAuth } from "firebase/auth";
-import { errorNotify, getUserUID, simpleNotify, waitForUser } from '@/utils/common';
-import { app } from '@/firebase';
-import { db } from '@/firebase';
-import { date } from 'zod';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  updateDoc,
+  collection,
+  query,
+  where,
+  deleteDoc,
+  addDoc,
+  getDocs,
+  Timestamp,
+  orderBy
+} from 'firebase/firestore';
+import { auth, db } from '@/firebase';
+import { errorNotify, getUserUID, simpleNotify, successNotify } from '@/utils/common';
 
-const auth = getAuth(app);
-const user_uid = getUserUID();
+// Helper to get safe UID
+const getEffectiveUID = async () => {
+  if (auth.currentUser?.uid) return auth.currentUser.uid;
+  return await getUserUID();
+};
+
+export const fetchCart = createAsyncThunk(
+  'cart/fetchCart',
+  async (userUid, { rejectWithValue }) => {
+    try {
+      const uid = userUid || (await getEffectiveUID());
+      if (!uid) {
+        // Fallback to local storage for guests
+        if (typeof window !== 'undefined') {
+          const localCart = localStorage.getItem('guest_cart');
+          return localCart ? JSON.parse(localCart) : [];
+        }
+        return [];
+      }
+
+      const cartRef = doc(db, 'carts', uid);
+      const cartSnap = await getDoc(cartRef);
+      if (cartSnap.exists()) {
+        return cartSnap.data().items || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('fetchCart error:', error);
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const addToCart = createAsyncThunk(
-  "cart/addToCart",
-  async (item, { rejectWithValue }) => {
-    console.log("aded tocart")
+  'cart/addToCart',
+  async (item, { rejectWithValue, dispatch }) => {
     try {
-      const user = auth.currentUser;
-      if (!user || !user_uid) {
-        simpleNotify("Please Login First to add item in cart");
-        return rejectWithValue("User not logged in");
-      }
-      const cartRef = doc(db, "carts", user.uid || user_uid);
-      console.log("00000000", user.uid)
+      const uid = await getEffectiveUID();
+      const cartItemId = item.size ? `${item.id}-${item.size}` : item.id;
+      const normalizedItem = {
+        ...item,
+        cartItemId,
+        quantity: item.quantity || 1,
+        size: item.size || 'M',
+        price: Number(item.price || 0),
+      };
 
-      // Fetch the current cart
+      if (!uid) {
+        // Save to guest localStorage
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem('guest_cart');
+          let items = raw ? JSON.parse(raw) : [];
+          const idx = items.findIndex((i) => (i.cartItemId || i.id) === cartItemId);
+          if (idx > -1) {
+            items[idx].quantity += normalizedItem.quantity;
+          } else {
+            items.push(normalizedItem);
+          }
+          localStorage.setItem('guest_cart', JSON.stringify(items));
+          successNotify('Item added to cart!');
+          return items;
+        }
+        return [normalizedItem];
+      }
+
+      const cartRef = doc(db, 'carts', uid);
       const cartSnap = await getDoc(cartRef);
 
       let updatedItems = [];
-
       if (cartSnap.exists()) {
-        const cartData = cartSnap.data();
-        const existingItems = cartData.items || [];
-
-        // Check if the item already exists
-        const itemIndex = existingItems.findIndex(
-          (cartItem) => cartItem.id === item.id
+        const existingItems = cartSnap.data().items || [];
+        const idx = existingItems.findIndex(
+          (cartItem) => (cartItem.cartItemId || cartItem.id) === cartItemId
         );
 
-        if (itemIndex > -1) {
-          // If item exists, update its quantity
+        if (idx > -1) {
           updatedItems = existingItems.map((cartItem, index) =>
-            index === itemIndex
-              ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            index === idx
+              ? { ...cartItem, quantity: cartItem.quantity + (normalizedItem.quantity || 1) }
               : cartItem
           );
         } else {
-          // If item doesn't exist, add it with quantity 1
-          updatedItems = [...existingItems, { ...item, quantity: 1 }];
+          updatedItems = [...existingItems, normalizedItem];
         }
       } else {
-        // If no cart exists, create a new one with the item
-        updatedItems = [{ ...item, quantity: 1 }];
+        updatedItems = [normalizedItem];
       }
 
-      // Update Firestore with the new cart items
-      await setDoc(
-        cartRef,
-        {
-          items: updatedItems,
-        },
-        { merge: true }
-      );
-      // simpleNotify("Product added");
-      return updatedItems; // Return the updated items
+      await setDoc(cartRef, { items: updatedItems, updatedAt: serverTimestamp() }, { merge: true });
+      successNotify('Item added to cart!');
+      return updatedItems;
     } catch (error) {
-      simpleNotify(error.message)
+      console.error('addToCart error:', error);
+      errorNotify(error.message || 'Failed to add item to cart');
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const addOrder = createAsyncThunk(
-  'orders/addOrder',
-  async (orderData, thunkAPI) => {
-    try {
-      const user = auth.currentUser;
-      const userid = user?.uid || localStorage.getItem('user_uid');
-
-      if (!userid) {
-        return thunkAPI.rejectWithValue('User not authenticated');
-      }
-
-      const now = Timestamp.now();
-      const twentyFourHoursAgo = Timestamp.fromMillis(now.toMillis() - 24 * 60 * 60 * 1000);
-
-      const batchAssignments = [];
-      const batchUpdates = []; // To store batch IDs for later update
-
-      for (const item of orderData.items) {
-        const productId = item.id;
-        const title = item.title;
-
-        const batchQuery = query(
-          collection(db, 'batches'),
-          where('productId', '==', productId),
-          where('created_at', '>=', twentyFourHoursAgo)
-        );
-
-        const batchSnap = await getDocs(batchQuery);
-        let batchId = '';
-        let batchDocRef;
-
-        if (!batchSnap.empty) {
-          const batchDoc = batchSnap.docs[0];
-          batchId = batchDoc.id;
-          batchDocRef = doc(db, 'batches', batchId);
-
-          // Store for later update
-          batchUpdates.push({
-            ref: batchDocRef,
-            item
-          });
-
-          await updateDoc(batchDocRef, {
-            total_quantity: (batchDoc.data().total_quantity || 0) + item.quantity,
-            [`sizing_breakdown.${item.size || 'default'}`]: (
-              (batchDoc.data().sizing_breakdown?.[item.size || 'default'] || 0) + item.quantity
-            ),
-          });
-
-        } else {
-          const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, '');
-          batchId = `BATCH-${dateStr}-${productId}`;
-          const sizingBreakdown = {
-            [item.size || 'default']: item.quantity
-          };
-
-          batchDocRef = doc(db, 'batches', batchId);
-
-          await setDoc(batchDocRef, {
-            batch_id: batchId,
-            created_at: serverTimestamp(),
-            productId,
-            product_title: title,
-            category: item.category || '',
-            status: 'pending',
-            order_ids: [], // temporarily empty
-            total_quantity: item.quantity,
-            sizing_breakdown: sizingBreakdown
-          });
-
-          batchUpdates.push({
-            ref: batchDocRef,
-            item
-          });
-        }
-
-        batchAssignments.push({
-          ...item,
-          batch_id: batchId
-        });
-      }
-
-      // STEP: Save order with updated items
-      const ordersRef = collection(db, 'orders');
-      const docRef = await addDoc(ordersRef, {
-        ...orderData,
-        user_uid: userid,
-        items: batchAssignments,
-        date: serverTimestamp()
-      });
-
-      // STEP: Now that we have order ID, update batches with it
-      for (const { ref } of batchUpdates) {
-        const batchSnap = await getDoc(ref);
-        const existingOrderIds = batchSnap.data().order_ids || [];
-        await updateDoc(ref, {
-          order_ids: Array.from(new Set([...existingOrderIds, docRef.id])) // prevent duplicates
-        });
-      }
-
-      // STEP: Delete user's cart
-      const cartDocRef = doc(db, 'carts', userid);
-      await deleteDoc(cartDocRef);
-
-      const savedDoc = await getDoc(docRef);
-
-      alert(`Order placed to:\n${orderData?.address}`);
-
-      return {
-        id: docRef.id,
-        ...savedDoc.data(),
-        date: savedDoc.data().date.toDate().toISOString()
-      };
-
-    } catch (error) {
-      console.error('addOrder error:', error);
-      return thunkAPI.rejectWithValue(error.message);
-    }
-  }
-);
-
-export const fetchUserOrders = createAsyncThunk(
-  'orders/fetchUserOrders',
-  async (_, thunkAPI) => {
-    const user_uid = await getUserUID();
-    try {
-      const ordersRef = collection(db, 'orders');
-      const user = auth.currentUser;
-      const userid = user?.uid || user_uid;
-      if (!userid) {
-        return thunkAPI.rejectWithValue('User not authenticated');
-      }
-      const q = query(
-        ordersRef,
-        where('user_uid', '==', userid),
-        orderBy('date', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      const orders = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().date.toDate().toISOString() || null
-      }));
-      return orders;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
-    }
-  }
-);
-
-
-// Async Thunk to Fetch Cart Items
-export const fetchCart = createAsyncThunk(
-  'cart/fetchCart',
-  async (user_uid, { rejectWithValue }) => {
-    try {
-      const user = auth.currentUser;
-      if (!user || !user_uid) throw new Error("User not authenticated");
-
-      const cartRef = doc(db, "carts", user.uid || user_uid);
-      const cartSnap = await getDoc(cartRef);
-      console.log("before", cartSnap.data().items);
-      if (cartSnap.exists()) {
-        console.log("ewdwea", cartSnap.data())
-        return cartSnap.data().items;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Async Thunk to Remove an Item from the Cart
 export const removeFromCart = createAsyncThunk(
   'cart/removeFromCart',
   async (itemId, { rejectWithValue }) => {
     try {
-      const user = await waitForUser();
-      if (!user) throw new Error("User not authenticated");
+      const uid = await getEffectiveUID();
 
-      const cartRef = doc(db, "carts", user.uid || user_uid);
-      const cartSnap = await getDoc(cartRef);
-      if (cartSnap.exists()) {
-        const cartData = cartSnap.data();
-        const updatedItems = cartData.items.filter((item) => item.id !== itemId); // Remove item by ID
-
-        // Update Firestore with the filtered items
-        await updateDoc(cartRef, {
-          items: updatedItems,
-        });
-
-        return updatedItems; // Return the updated cart items
-      } else {
-        throw new Error("Cart not found");
+      if (!uid) {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem('guest_cart');
+          let items = raw ? JSON.parse(raw) : [];
+          items = items.filter((i) => (i.cartItemId || i.id) !== itemId && i.id !== itemId);
+          localStorage.setItem('guest_cart', JSON.stringify(items));
+          return items;
+        }
+        return [];
       }
+
+      const cartRef = doc(db, 'carts', uid);
+      const cartSnap = await getDoc(cartRef);
+
+      if (cartSnap.exists()) {
+        const currentItems = cartSnap.data().items || [];
+        const updatedItems = currentItems.filter(
+          (item) => (item.cartItemId || item.id) !== itemId && item.id !== itemId
+        );
+
+        await updateDoc(cartRef, { items: updatedItems });
+        simpleNotify('Item removed from cart');
+        return updatedItems;
+      }
+      return [];
     } catch (error) {
-      console.log(error, "error in remove from cart")
+      console.error('removeFromCart error:', error);
       return rejectWithValue(error.message);
     }
   }
 );
 
-
-
-// Async Thunk to Update Cart Item Quantity
-export const updateCartItem = createAsyncThunk(
-  'cart/updateCartItem',
-  async ({ itemId, newQuantity }, { rejectWithValue }) => {
+export const incrementQuantity = createAsyncThunk(
+  'cart/incrementQuantity',
+  async (itemId, { rejectWithValue }) => {
     try {
-      const user = await waitForUser();
-      if (!user) throw new Error("User not authenticated");
+      const uid = await getEffectiveUID();
 
-      const cartRef = doc(db, "carts", user.uid);
+      if (!uid) {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem('guest_cart');
+          let items = raw ? JSON.parse(raw) : [];
+          items = items.map((i) =>
+            (i.cartItemId || i.id) === itemId || i.id === itemId
+              ? { ...i, quantity: i.quantity + 1 }
+              : i
+          );
+          localStorage.setItem('guest_cart', JSON.stringify(items));
+          return items;
+        }
+        return [];
+      }
+
+      const cartRef = doc(db, 'carts', uid);
       const cartSnap = await getDoc(cartRef);
-
       if (cartSnap.exists()) {
-        const cartData = cartSnap.data();
-        const updatedItems = cartData.items.map((item) =>
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
+        const items = cartSnap.data().items || [];
+        const updatedItems = items.map((cartItem) =>
+          (cartItem.cartItemId || cartItem.id) === itemId || cartItem.id === itemId
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            : cartItem
         );
 
-        await updateDoc(cartRef, {
-          items: updatedItems,
-        });
-
+        await setDoc(cartRef, { items: updatedItems }, { merge: true });
         return updatedItems;
       }
-      throw new Error("Cart not found");
+      return [];
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -306,62 +196,287 @@ export const updateCartItem = createAsyncThunk(
 );
 
 export const decrementQuantity = createAsyncThunk(
-  "cart/decrementQuantity",
+  'cart/decrementQuantity',
   async (itemId, { rejectWithValue }) => {
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("User not authenticated");
+      const uid = await getEffectiveUID();
 
-      const cartRef = doc(db, "carts", user.uid || user_uid);
+      if (!uid) {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem('guest_cart');
+          let items = raw ? JSON.parse(raw) : [];
+          items = items
+            .map((i) =>
+              (i.cartItemId || i.id) === itemId || i.id === itemId
+                ? { ...i, quantity: i.quantity - 1 }
+                : i
+            )
+            .filter((i) => i.quantity > 0);
+          localStorage.setItem('guest_cart', JSON.stringify(items));
+          return items;
+        }
+        return [];
+      }
+
+      const cartRef = doc(db, 'carts', uid);
       const cartSnap = await getDoc(cartRef);
-      console.log("cwefiwe", cartSnap === true)
       if (cartSnap.exists()) {
-        const cartData = cartSnap.data();
-        const updatedItems = cartData.items
+        const items = cartSnap.data().items || [];
+        const updatedItems = items
           .map((cartItem) =>
-            cartItem.id === itemId
+            (cartItem.cartItemId || cartItem.id) === itemId || cartItem.id === itemId
               ? { ...cartItem, quantity: cartItem.quantity - 1 }
               : cartItem
           )
-          .filter((cartItem) => cartItem.quantity > 0); // Remove items with 0 quantity
+          .filter((cartItem) => cartItem.quantity > 0);
 
-        // Update Firestore
         await setDoc(cartRef, { items: updatedItems }, { merge: true });
-
         return updatedItems;
       }
+      return [];
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-
-export const incrementQuantity = createAsyncThunk(
-  "cart/incrementQuantity",
-  async (itemId, { rejectWithValue }) => {
+export const updateCartItem = createAsyncThunk(
+  'cart/updateCartItem',
+  async ({ itemId, quantity }, { rejectWithValue }) => {
     try {
-      const user = auth.currentUser;
-      if (!user || !user_uid) throw new Error("User not authenticated");
-      const cartRef = doc(db, "carts", user.uid || user_uid);
+      const uid = await getEffectiveUID();
+      if (!uid) return [];
+
+      const cartRef = doc(db, 'carts', uid);
       const cartSnap = await getDoc(cartRef);
-      console.log("cwefiwe", cartSnap === true)
       if (cartSnap.exists()) {
-        const cartData = cartSnap.data();
-        const updatedItems = cartData.items
-          .map((cartItem) =>
-            cartItem.id === itemId
-              ? { ...cartItem, quantity: cartItem.quantity + 1 }
-              : cartItem
+        const items = cartSnap.data().items || [];
+        const updatedItems = items
+          .map((i) =>
+            (i.cartItemId || i.id) === itemId || i.id === itemId ? { ...i, quantity } : i
           )
-          .filter((cartItem) => cartItem.quantity > 0); // Remove items with 0 quantity
+          .filter((i) => i.quantity > 0);
 
-        // Update Firestore
         await setDoc(cartRef, { items: updatedItems }, { merge: true });
-
         return updatedItems;
       }
+      return [];
     } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const clearCart = createAsyncThunk('cart/clearCart', async (_, { rejectWithValue }) => {
+  try {
+    const uid = await getEffectiveUID();
+    if (uid) {
+      const cartRef = doc(db, 'carts', uid);
+      await setDoc(cartRef, { items: [] }, { merge: true });
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('guest_cart');
+    }
+    return [];
+  } catch (error) {
+    return rejectWithValue(error.message);
+  }
+});
+
+export const addOrder = createAsyncThunk(
+  'orders/addOrder',
+  async (orderData, { rejectWithValue }) => {
+    try {
+      const uid = await getEffectiveUID();
+      if (!uid) {
+        errorNotify('Please login to complete your order.');
+        return rejectWithValue('User not authenticated');
+      }
+
+      const now = Timestamp.now();
+      const twentyFourHoursAgo = Timestamp.fromMillis(now.toMillis() - 24 * 60 * 60 * 1000);
+      const batchAssignments = [];
+      const batchUpdates = [];
+
+      for (const item of orderData.items || []) {
+        const productId = item.id || 'item';
+        const title = item.title || item.name || 'Product';
+        const quantity = item.quantity || 1;
+        const size = item.size || 'default';
+
+        try {
+          const batchQuery = query(
+            collection(db, 'batches'),
+            where('productId', '==', productId),
+            where('created_at', '>=', twentyFourHoursAgo)
+          );
+
+          const batchSnap = await getDocs(batchQuery);
+          let batchId = '';
+          let batchDocRef;
+
+          if (!batchSnap.empty) {
+            const batchDoc = batchSnap.docs[0];
+            batchId = batchDoc.id;
+            batchDocRef = doc(db, 'batches', batchId);
+
+            batchUpdates.push({ ref: batchDocRef, item });
+
+            await updateDoc(batchDocRef, {
+              total_quantity: (batchDoc.data().total_quantity || 0) + quantity,
+              [`sizing_breakdown.${size}`]:
+                (batchDoc.data().sizing_breakdown?.[size] || 0) + quantity,
+            });
+          } else {
+            const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            batchId = `BATCH-${dateStr}-${productId}`;
+            batchDocRef = doc(db, 'batches', batchId);
+
+            await setDoc(batchDocRef, {
+              batch_id: batchId,
+              created_at: serverTimestamp(),
+              productId,
+              product_title: title,
+              category: item.category || '',
+              status: 'pending',
+              order_ids: [],
+              total_quantity: quantity,
+              sizing_breakdown: { [size]: quantity },
+            });
+
+            batchUpdates.push({ ref: batchDocRef, item });
+          }
+
+          batchAssignments.push({
+            ...item,
+            batch_id: batchId,
+          });
+        } catch (bErr) {
+          console.warn('Batch tracking warning (proceeding with order):', bErr);
+          batchAssignments.push(item);
+        }
+      }
+
+      // Save order to Firestore
+      const ordersRef = collection(db, 'orders');
+      const payloadToSave = {
+        ...orderData,
+        user_uid: uid,
+        items: batchAssignments,
+        status: orderData.status || 'pending',
+        date: serverTimestamp(),
+        createdAt: new Date().toISOString(),
+      };
+
+      const docRef = await addDoc(ordersRef, payloadToSave);
+
+      // Update batches with order ID
+      for (const { ref } of batchUpdates) {
+        try {
+          const batchSnap = await getDoc(ref);
+          if (batchSnap.exists()) {
+            const existingOrderIds = batchSnap.data().order_ids || [];
+            await updateDoc(ref, {
+              order_ids: Array.from(new Set([...existingOrderIds, docRef.id])),
+            });
+          }
+        } catch (e) {
+          console.warn('Batch update notice:', e);
+        }
+      }
+
+      // Clear user's cart in Firestore & local
+      try {
+        const cartDocRef = doc(db, 'carts', uid);
+        await setDoc(cartDocRef, { items: [] }, { merge: true });
+      } catch (e) {}
+
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('guest_cart');
+      }
+
+      successNotify('Order placed successfully! 🎉');
+
+      return {
+        id: docRef.id,
+        ...orderData,
+        user_uid: uid,
+        items: batchAssignments,
+        status: orderData.status || 'pending',
+        date: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('addOrder error:', error);
+      errorNotify(error.message || 'Failed to place order');
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const fetchUserOrders = createAsyncThunk(
+  'orders/fetchUserOrders',
+  async (_, { rejectWithValue }) => {
+    try {
+      const uid = await getEffectiveUID();
+      if (!uid) return [];
+
+      const ordersRef = collection(db, 'orders');
+      let orders = [];
+
+      try {
+        const q = query(ordersRef, where('user_uid', '==', uid), orderBy('date', 'desc'));
+        const snapshot = await getDocs(q);
+        orders = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          date: d.data().date?.toDate ? d.data().date.toDate().toISOString() : d.data().date || d.data().createdAt || new Date().toISOString(),
+        }));
+      } catch (orderErr) {
+        // Fallback without orderBy if index is building
+        const qFallback = query(ordersRef, where('user_uid', '==', uid));
+        const snapshot = await getDocs(qFallback);
+        orders = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          date: d.data().date?.toDate ? d.data().date.toDate().toISOString() : d.data().date || d.data().createdAt || new Date().toISOString(),
+        })).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      }
+
+      return orders;
+    } catch (error) {
+      console.error('fetchUserOrders error:', error);
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const cancelUserOrder = createAsyncThunk(
+  'orders/cancelUserOrder',
+  async ({ orderId, reason = 'Cancelled by user' }, { rejectWithValue }) => {
+    try {
+      const orderRef = doc(db, 'orders', orderId);
+      const snap = await getDoc(orderRef);
+
+      if (!snap.exists()) {
+        throw new Error('Order not found');
+      }
+
+      const orderData = snap.data();
+      if (['delivered', 'shipped'].includes(orderData.status?.toLowerCase())) {
+        throw new Error('Cannot cancel an order that has already been shipped or delivered.');
+      }
+
+      await updateDoc(orderRef, {
+        status: 'cancelled',
+        cancellationReason: reason,
+        cancelledAt: serverTimestamp(),
+      });
+
+      successNotify('Order has been cancelled successfully.');
+      return { orderId, status: 'cancelled', cancellationReason: reason };
+    } catch (error) {
+      console.error('cancelUserOrder error:', error);
+      errorNotify(error.message || 'Failed to cancel order');
       return rejectWithValue(error.message);
     }
   }

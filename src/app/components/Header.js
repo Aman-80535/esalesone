@@ -1,156 +1,370 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCart } from "@/redux/cart/cartAction";
 import CartPopup from "./CartPopup";
-import { CiShoppingCart } from "react-icons/ci";
 import { fetchUserData, logoutUser } from "@/redux/user/userActions";
+import { fetchWishlist } from '@/redux/wishlist/wishlistAction';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { FaBox, FaBoxOpen, FaRegUserCircle, FaUserCircle } from "react-icons/fa";
-import '../../../src/app/styles/header.css';
-import { CgProfile } from "react-icons/cg";
+import { FaBox, FaShieldAlt } from "react-icons/fa";
+import '../styles/header.css';
+import {
+  CgHeart,
+  CgLogOut,
+  CgMenuGridO,
+  CgProfile,
+  CgSearch,
+  CgShoppingCart,
+} from "react-icons/cg";
+import { CiShoppingCart } from "react-icons/ci";
+import { isAdminEmail } from "@/utils/admin";
+import { useAuth } from "@/context/AuthProvider";
 
 export const Header = () => {
-	const { items } = useSelector((state) => state.cart);
-	const { userData, token } = useSelector((state) => state.user);
-	const dispatch = useDispatch();
+  const { items } = useSelector((state) => state.cart);
+  const { userData, token } = useSelector((state) => state.user);
+  const { user } = useAuth();
+  const dispatch = useDispatch();
+  const { items: wishlistItems = [] } = useSelector((s) => s.wishlist || {});
 
-	const [isOpen, setIsOpen] = useState(false); // Cart popup
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu flag
-	const [isMobileView, setIsMobileView] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [showSearchInput, setShowSearchInput] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-	const router = useRouter();
+  const router = useRouter();
 
-	const togglePopup = () => setIsOpen(!isOpen);
+  const togglePopup = () => setIsOpen(!isOpen);
 
-	async function handleLogoutUser(e) {
-		e.preventDefault();
-		dispatch(logoutUser());
-		router.push('/');
-	}
+  async function handleLogoutUser(e) {
+    e.preventDefault();
+    await dispatch(logoutUser());
+    setIsMobileMenuOpen(false);
+    router.push('/');
+  }
 
-	useEffect(() => {
-		if (window.innerWidth < 768) {
-			setIsMobileView(true);
-		}
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchUserData());
+      dispatch(fetchWishlist());
+      dispatch(fetchCart());
+    }
+  }, [dispatch, token]);
 
-		if (typeof window !== 'undefined') {
-			const fetchData = async () => {
-				if (token) {
-					await dispatch(fetchUserData(token));
-				}
-			};
-			fetchData();
-		}
-	}, [dispatch, token]);
+  const handleSearch = (e) => {
+    if (e) e.preventDefault();
+    if (searchValue.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchValue.trim())}`);
+      setShowSearchInput(false);
+      setIsMobileMenuOpen(false);
+    }
+  };
 
-	return (
-		<nav className="nav-main shadow-md header-first">
-			<div className="header-first max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex items-center justify-between h-16 gap-4">
-					{/* Brand */}
-					<Link href="/" className="brand-head flex items-center gap-3 text-xl font-bold">
-						<img src="/shopi-logo.png" alt="Shopi" className="brand-logo" />
-						<span>Shopi</span>
-					</Link>
+  const userEmail = userData?.email || user?.email;
+  const isUserAdmin = isAdminEmail(userEmail, userData);
+  const totalCartCount = (items || []).reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
 
-					{/* Search (desktop) */}
-					
+  const navLinks = (
+    <>
+      {isUserAdmin && (
+        <Link
+          href="/admin"
+          className="icon-btn has-tooltip !bg-emerald-900 !text-white"
+          data-tooltip="Admin Panel"
+          title="Admin Panel"
+        >
+          <FaShieldAlt className="text-amber-300" />
+        </Link>
+      )}
 
-					<div className="nav-bar flex items-center">
+      {token && (
+        <Link
+          href="/myorders"
+          className="icon-btn has-tooltip"
+          data-tooltip="My Orders"
+          title="My Orders"
+        >
+          <FaBox />
+        </Link>
+      )}
 
-						{/* Mobile Menu Button */}
-						<button
-							onClick={() => setIsMobileMenuOpen(prev => !prev)}
-							className="md:hidden inline-flex items-center justify-center p-2 rounded-md  focus:outline-none"
-						>
-							{isMobileMenuOpen ? (
-								// X icon
-								<div onClick={() => setIsOpen(false)}>
+      <Link
+        href="/myaccount"
+        className="icon-btn has-tooltip"
+        data-tooltip="My Account"
+        title="My Account"
+      >
+        <CgProfile />
+      </Link>
 
-									<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-									</svg>
-								</div>
-							) : (
-								// Hamburger icon
-								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-								</svg>
-							)}
-						</button>
+      <button
+        type="button"
+        className="icon-btn has-tooltip relative"
+        data-tooltip="Wishlist"
+        title="Wishlist"
+        onClick={() => router.push('/wishlist')}
+      >
+        <CgHeart />
+        {wishlistItems?.length > 0 && (
+          <span className="badge">{wishlistItems.length}</span>
+        )}
+      </button>
 
-						{/* Desktop Menu */}
-						<div className="hidden md:flex space-x-4 items-center">
-							{userData?.email && (
-								<span className="user-email">{userData.email}</span>
-							)}
+      <button
+        type="button"
+        className="icon-btn has-tooltip"
+        data-tooltip="Search"
+        title="Search"
+        onClick={() => setShowSearchInput((s) => !s)}
+      >
+        <CgSearch />
+      </button>
 
-							{token && (
-								<Link href="/myorders" className="icon-btn has-tooltip" data-tooltip="My Orders" title="My Orders">
-									<FaBox />
-								</Link>
-							)}
+      <Link
+        href="/categories"
+        className="icon-btn has-tooltip"
+        data-tooltip="Categories"
+        title="Categories"
+      >
+        <CgMenuGridO />
+      </Link>
 
-							<Link href="/myaccount" className="icon-btn has-tooltip" data-tooltip="My Account" title="My Account">
-								<CgProfile />
-							</Link>
+      <button
+        type="button"
+        className="icon-btn has-tooltip relative"
+        data-tooltip="Shopping Cart"
+        onClick={() => setIsOpen((p) => !p)}
+        title="Cart"
+      >
+        <CiShoppingCart className="text-xl" />
+        {totalCartCount > 0 && (
+          <span className="badge">{totalCartCount}</span>
+        )}
+      </button>
 
-							<button className="icon-btn has-tooltip" data-tooltip="Cart" onClick={() => setIsOpen(p => !p)} title="Cart">
-								<CiShoppingCart />
-								{items?.length > 0 && token && (
-									<span className="badge">{items?.length}</span>
-								)}
-							</button>
-						</div>
+      {token ? (
+        <button
+          type="button"
+          className="icon-btn has-tooltip text-red-600 hover:text-red-700"
+          data-tooltip="Logout"
+          title="Logout"
+          onClick={handleLogoutUser}
+        >
+          <CgLogOut />
+        </button>
+      ) : (
+        <Link
+          href="/auth/login"
+          className="icon-btn has-tooltip font-bold !w-auto !px-3 text-xs"
+          data-tooltip="Sign In"
+          title="Login"
+        >
+          Sign In
+        </Link>
+      )}
+    </>
+  );
 
-					</div>
-				</div>
-			</div>
+  return (
+    <nav className="nav-main shadow-md sticky top-0 z-40 bg-white/95 backdrop-blur-md transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 gap-4">
+          <Link href="/" className="brand-head flex items-center gap-2 text-2xl font-black tracking-tight">
+            <img src="/ChatGPT Image Aug 14, 2026, 11_33_05 PM.png" alt="LIBAAS" className="brand-logo" />
+            <span className="text-emerald-950 font-black">LIBAAS<span className="text-emerald-600">.</span></span>
+          </Link>
 
-			{/* Mobile Menu */}
-			{isMobileView && isMobileMenuOpen && (
-                <div className="mobile-bar absolute top-15 right-0 md:hidden px-4 py-4 pb-4 space-y-3 bg-white/95 backdrop-blur-sm rounded-b-lg shadow-md">
-					{userData?.email && (
-						<span className="block text-gray-700">{userData.email}</span>
-					)}
+          {/* Quick Categories Bar (Desktop) */}
+          <div className="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-700">
+            <Link href="/product/men" className="hover:text-emerald-800 transition">Men</Link>
+            <Link href="/product/women" className="hover:text-emerald-800 transition">Women</Link>
+            <Link href="/product/latest" className="hover:text-emerald-800 transition">Latest</Link>
+            <Link href="/product/sale" className="text-amber-600 font-bold hover:text-amber-700 transition">Sale 🔥</Link>
+          </div>
 
-					{token && (
-						<>
-							<Link href="/myorders" className="fa-box relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
-								<FaBox className="w-6 h-6" />
-								<span className="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Orders</span>
-							</Link>
-						</>
-					)}
-					{/* My Account */}
-					<Link href="/myaccount" className="fa-box profiel-icon cg-mob  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl">
-						<CgProfile className="w-6 h-6" />
-						<span className="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My profile</span>
+          <div className="nav-bar flex items-center gap-2">
+            {showSearchInput && (
+              <form onSubmit={handleSearch} className="hidden md:flex items-center gap-2">
+                <input
+                  className="header-search bg-gray-50 border border-gray-200 focus:bg-white text-sm"
+                  placeholder="Search 1,000+ fashion styles..."
+                  value={searchValue}
+                  autoFocus
+                  onChange={(e) => setSearchValue(e.target.value)}
+                />
+                <button type="submit" className="add-cart-btn px-4 py-2 text-xs font-bold">
+                  Go
+                </button>
+              </form>
+            )}
 
-					</Link>
+            {/* Mobile Hamburger */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-emerald-900 bg-gray-100 focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
 
+            {/* Desktop Icons */}
+            <div className="hidden md:flex space-x-1.5 items-center">
+              {userData?.firstName ? (
+                <span className="text-xs font-semibold text-emerald-900 bg-emerald-50 px-2.5 py-1 rounded-full mr-1">
+                  Hi, {userData.firstName}
+                </span>
+              ) : null}
+              {navLinks}
+            </div>
+          </div>
+        </div>
+      </div>
 
+      {/* Mobile Drawer Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-100 bg-white px-5 py-5 space-y-4 shadow-xl z-50 animate-fadeIn">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <input
+              className="header-search !w-full text-sm"
+              placeholder="Search products..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+            <button type="submit" className="add-cart-btn px-4 py-2 text-xs">
+              Go
+            </button>
+          </form>
 
-					<Link href="#" className="cart-icon  relative flex items-center text-gray-700 hover:text-blue-600 text-2xl" onClick={() => setIsOpen(p => !p)}>
-						{/* Cart Icon */}
-						<CiShoppingCart className="w-8 h-8" />
-						<span className="fa-box decoration-wavy text-xl text-2xl   fa-box-mob">My Cart</span>
+          <div className="grid grid-cols-2 gap-2 text-center text-sm font-semibold pt-2 border-t">
+            <Link
+              href="/product/men"
+              className="p-2.5 bg-gray-50 rounded-lg hover:bg-emerald-50 text-gray-800"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              👕 Men
+            </Link>
+            <Link
+              href="/product/women"
+              className="p-2.5 bg-gray-50 rounded-lg hover:bg-emerald-50 text-gray-800"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              👗 Women
+            </Link>
+            <Link
+              href="/product/latest"
+              className="p-2.5 bg-gray-50 rounded-lg hover:bg-emerald-50 text-gray-800"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              ✨ Latest
+            </Link>
+            <Link
+              href="/product/sale"
+              className="p-2.5 bg-amber-50 text-amber-900 rounded-lg hover:bg-amber-100"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              🔥 Sale
+            </Link>
+          </div>
 
+          <div className="space-y-2 pt-2 border-t text-sm font-medium">
+            {isUserAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 p-2.5 rounded-lg bg-emerald-900 text-white font-bold"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <FaShieldAlt className="text-amber-300" />
+                <span>Admin Dashboard</span>
+              </Link>
+            )}
 
-						{/* Badge Counter */}
-						{items?.length > 0 && token && (
-							<span className="count-length ml-2  bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
-								{items.length}
-							</span>
-						)}
-					</Link>
-				</div>
-			)}
+            {token && (
+              <Link
+                href="/myorders"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 text-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <FaBox className="text-emerald-700" />
+                <span>My Orders</span>
+              </Link>
+            )}
 
-			<CartPopup setIsOpen={setIsOpen} isOpen={isOpen} togglePopup={togglePopup} />
-		</nav>
-	);
+            <Link
+              href="/myaccount"
+              className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 text-gray-800"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <CgProfile className="text-emerald-700 text-lg" />
+              <span>My Account</span>
+            </Link>
+
+            <Link
+              href="/wishlist"
+              className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 text-gray-800"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <div className="flex items-center gap-3">
+                <CgHeart className="text-emerald-700 text-lg" />
+                <span>My Wishlist</span>
+              </div>
+              {wishlistItems?.length > 0 && (
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
+
+            <button
+              type="button"
+              className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 text-gray-800 text-left"
+              onClick={() => {
+                setIsOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <CiShoppingCart className="text-emerald-700 text-xl" />
+                <span>My Cart</span>
+              </div>
+              {totalCartCount > 0 && (
+                <span className="px-2 py-0.5 bg-emerald-700 text-white text-xs font-bold rounded-full">
+                  {totalCartCount}
+                </span>
+              )}
+            </button>
+
+            {token ? (
+              <button
+                type="button"
+                className="w-full flex items-center gap-3 p-2.5 rounded-lg text-red-600 hover:bg-red-50 text-left font-semibold"
+                onClick={handleLogoutUser}
+              >
+                <CgLogOut className="text-lg" />
+                <span>Logout</span>
+              </button>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="block text-center py-2.5 bg-emerald-800 text-white font-bold rounded-lg mt-3"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login / Register
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      <CartPopup setIsOpen={setIsOpen} isOpen={isOpen} togglePopup={togglePopup} />
+    </nav>
+  );
 };

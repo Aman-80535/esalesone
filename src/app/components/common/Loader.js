@@ -1,13 +1,14 @@
-import React from 'react'
+'use client';
 
-const Loader = () => {
-    return (
-        <div className='loader-overlay'>
-            <div className="spinner-grow" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    )
-}
+import React from 'react';
 
-export default Loader
+const Loader = ({ text = 'Loading...' }) => {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 min-h-[160px] gap-3">
+      <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin"></div>
+      <p className="text-sm font-medium text-emerald-900 animate-pulse">{text}</p>
+    </div>
+  );
+};
+
+export default Loader;

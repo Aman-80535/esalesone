@@ -1,9 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchUserData } from './userActions';
-import { logoutUser, fetchProducts } from './userActions';
-import { current } from '@reduxjs/toolkit';
-import { act } from 'react';
-
+import {
+  fetchUserData,
+  logoutUser,
+  fetchProducts,
+  updateUserProfile,
+  saveUserAddress,
+  deleteUserAddress,
+  fetchAllAdminOrders,
+  updateOrderStatusAdmin,
+  fetchAllAdminUsers,
+} from './userActions';
 
 const initialState = {
   token: null,
@@ -12,6 +18,8 @@ const initialState = {
   error: null,
   products: [],
   allProducts: [],
+  adminOrders: [],
+  adminUsers: [],
 };
 
 const userSlice = createSlice({
@@ -25,17 +33,20 @@ const userSlice = createSlice({
       state.token = action.payload;
     },
     filterProducts: (state, action) => {
-      if (action.payload === 'all') {
+      const category = (action.payload || 'all').toLowerCase();
+      if (category === 'all') {
         state.products = state.allProducts;
       } else {
-        const d = state.allProducts
-        console.log(current(d), "888")
-        state.products = state.allProducts.filter((i) => i.category.includes(action.payload));
+        state.products = state.allProducts.filter((i) => {
+          const itemCat = String(i?.category?.name ?? i?.category ?? '').toLowerCase();
+          return itemCat.includes(category);
+        });
       }
     },
   },
   extraReducers: (builder) => {
     builder
+      // Fetch User Data
       .addCase(fetchUserData.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -49,22 +60,34 @@ const userSlice = createSlice({
         state.error = action.payload || 'Failed to fetch user data';
       })
 
-
-      .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // Update User Profile
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.userData = {
+          ...(state.userData || {}),
+          ...action.payload,
+        };
       })
 
+      // Address actions
+      .addCase(saveUserAddress.fulfilled, (state, action) => {
+        if (state.userData) {
+          state.userData.addresses = action.payload;
+        }
+      })
+      .addCase(deleteUserAddress.fulfilled, (state, action) => {
+        if (state.userData) {
+          state.userData.addresses = action.payload;
+        }
+      })
+
+      // Logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.loading = false;
-        state.user = null;
+        state.userData = null;
         state.token = null;
       })
-      .addCase(logoutUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
 
+      // Fetch Products
       .addCase(fetchProducts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -76,9 +99,24 @@ const userSlice = createSlice({
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       })
 
+      // Admin Orders
+      .addCase(fetchAllAdminOrders.fulfilled, (state, action) => {
+        state.adminOrders = action.payload;
+      })
+      .addCase(updateOrderStatusAdmin.fulfilled, (state, action) => {
+        const { orderId, status } = action.payload;
+        state.adminOrders = state.adminOrders.map((o) =>
+          o.id === orderId ? { ...o, status } : o
+        );
+      })
+
+      // Admin Users
+      .addCase(fetchAllAdminUsers.fulfilled, (state, action) => {
+        state.adminUsers = action.payload;
+      });
   },
 });
 

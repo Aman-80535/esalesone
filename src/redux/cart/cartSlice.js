@@ -1,17 +1,75 @@
-import { createSlice, current } from '@reduxjs/toolkit';
-import { fetchCart, addToCart, addOrder, removeFromCart, updateCartItem, decrementQuantity, incrementQuantity, fetchUserOrders } from './cartAction';
+import { createSlice } from '@reduxjs/toolkit';
+import {
+  fetchCart,
+  addToCart,
+  addOrder,
+  removeFromCart,
+  updateCartItem,
+  decrementQuantity,
+  incrementQuantity,
+  fetchUserOrders,
+  cancelUserOrder,
+  clearCart,
+} from './cartAction';
+
+const AVAILABLE_COUPONS = {
+  SAVE10: { code: 'SAVE10', discountType: 'percentage', value: 10, minAmount: 0 },
+  WELCOME20: { code: 'WELCOME20', discountType: 'percentage', value: 20, minAmount: 100 },
+  FLAT50: { code: 'FLAT50', discountType: 'fixed', value: 50, minAmount: 200 },
+  FREESHIP: { code: 'FREESHIP', discountType: 'shipping', value: 0, minAmount: 0 },
+};
+
+const initialState = {
+  items: [],
+  loading: false,
+  error: null,
+  orderList: [],
+  appliedCoupon: null,
+  couponDiscount: 0,
+};
 
 const cartSlice = createSlice({
   name: 'cart',
-  initialState: {
-    items: [],
-    loading: false,
-    error: null,
-    orderList: []
-  },
+  initialState,
   reducers: {
-    chekItem: (state, action) => {
-      console.log("checked item");
+    applyCouponCode: (state, action) => {
+      const code = (action.payload || '').trim().toUpperCase();
+      const coupon = AVAILABLE_COUPONS[code];
+
+      if (!coupon) {
+        state.error = 'Invalid coupon code. Try SAVE10, WELCOME20, or FLAT50.';
+        return;
+      }
+
+      const subtotal = state.items.reduce(
+        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+        0
+      );
+
+      if (subtotal < coupon.minAmount) {
+        state.error = `Coupon requires a minimum order of ₹${coupon.minAmount}.`;
+        return;
+      }
+
+      let discount = 0;
+      if (coupon.discountType === 'percentage') {
+        discount = (subtotal * coupon.value) / 100;
+      } else if (coupon.discountType === 'fixed') {
+        discount = Math.min(coupon.value, subtotal);
+      } else if (coupon.discountType === 'shipping') {
+        discount = 0; // handled at checkout shipping level
+      }
+
+      state.appliedCoupon = coupon;
+      state.couponDiscount = discount;
+      state.error = null;
+    },
+    removeCouponCode: (state) => {
+      state.appliedCoupon = null;
+      state.couponDiscount = 0;
+    },
+    resetCartError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -19,180 +77,109 @@ const cartSlice = createSlice({
       // Fetch Cart
       .addCase(fetchCart.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
+      // Add to Cart
+      .addCase(addToCart.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addToCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
+      })
+      .addCase(addToCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Remove from Cart
+      .addCase(removeFromCart.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(removeFromCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
+      })
+      .addCase(removeFromCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Increment Quantity
+      .addCase(incrementQuantity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
+      })
+
+      // Decrement Quantity
+      .addCase(decrementQuantity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
+      })
+
+      // Update Cart Item
+      .addCase(updateCartItem.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = Array.isArray(action.payload) ? action.payload : [];
+      })
+
+      // Clear Cart
+      .addCase(clearCart.fulfilled, (state) => {
+        state.items = [];
+        state.appliedCoupon = null;
+        state.couponDiscount = 0;
+      })
+
+      // Add Order
       .addCase(addOrder.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(addOrder.fulfilled, (state, action) => {
         state.loading = false;
         state.items = [];
+        state.appliedCoupon = null;
+        state.couponDiscount = 0;
+        if (action.payload) {
+          state.orderList = [action.payload, ...state.orderList];
+        }
       })
       .addCase(addOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
+      // Fetch User Orders
       .addCase(fetchUserOrders.pending, (state) => {
         state.loading = true;
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
-
         state.loading = false;
-        state.orderList = action.payload;
+        state.orderList = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-
-      .addCase(addToCart.pending, (state, action) => {
-        state.loading = true;
-
-        const incomingItem = action.meta.arg;
-        const existingItemIndex = state.items.findIndex(i => i.id === incomingItem.id);
-
-        if (existingItemIndex > -1) {
-          state.items[existingItemIndex].quantity += 1;
-        } else {
-          state.items.push({ ...incomingItem, quantity: 1 });
-        }
-      })
-
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = Array.isArray(action.payload) ? action.payload : [];
-      })
-
-      .addCase(addToCart.rejected, (state, action) => {
-        state.loading = false;
-
-        const index = state.items.findIndex(item => item.id === failedItem.id);
-
-        if (index > -1) {
-          const currentItem = state.items[index];
-          if (currentItem.quantity > 1) {
-            state.items[index].quantity -= 1;
-          } else {
-            state.items.splice(index, 1);
-          }
-        }
-
-      })
-
-
-
-      // Remove Item from Cart with Optimistic Update
-      .addCase(removeFromCart.pending, (state, action) => {
-        state.loading = true;
-
-        // Optimistically remove the item from the UI
-        state.items = state.items.filter(item => item.id !== action.meta.arg);
-
-      })
-      .addCase(removeFromCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(removeFromCart.rejected, (state, action) => {
-        state.loading = false;
-        state.items.push(action.meta.arg);
-        state.error = action.payload;
-      })
-
-      // Update Item Quantity in Cart with Optimistic Update
-      .addCase(updateCartItem.pending, (state, action) => {
-        state.loading = true;
-
-        // Optimistically update the item quantity
-        const itemIndex = state.items.findIndex((i) => i.id === action.meta.arg.id);
-        if (itemIndex >= 0) {
-          state.items[itemIndex] = { ...state.items[itemIndex], quantity: action.meta.arg.quantity };
-        }
-      })
-      .addCase(updateCartItem.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(updateCartItem.rejected, (state, action) => {
-        state.loading = false;
-        // Rollback the optimistic update in case of failure
-        const itemIndex = state.items.findIndex((i) => i.id === action.meta.arg.id);
-        if (itemIndex >= 0) {
-          state.items[itemIndex] = { ...state.items[itemIndex], quantity: action.meta.arg.previousQuantity };
-        }
-        state.error = action.payload;
-      })
-
-      // Increment Item Quantity in Cart with Optimistic Update
-      .addCase(incrementQuantity.pending, (state, action) => {
-        state.loading = true;
-        state.error = null;
-
-        // Optimistically increment the item quantity
-        const itemIndex = state.items.findIndex((i) => i.id === action.meta.arg.id);
-        if (itemIndex >= 0) {
-          state.items[itemIndex] = {
-            ...state.items[itemIndex],
-            quantity: state.items[itemIndex].quantity + 1
-          };
-        }
-      })
-      .addCase(incrementQuantity.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(incrementQuantity.rejected, (state, action) => {
-        state.loading = false;
-        const itemIndex = state.items.findIndex((i) => i.id === action.meta.arg.id);
-        if (itemIndex >= 0) {
-          state.items[itemIndex] = {
-            ...state.items[itemIndex],
-            quantity: state.items[itemIndex].quantity - 1
-          }; // Undo the increment
-        }
-        state.error = action.error.message;
-      })
-
-      // Decrement Item Quantity in Cart with Optimistic Update
-      .addCase(decrementQuantity.pending, (state, action) => {
-        state.loading = true;
-
-        // Optimistically decrement the item quantity
-        const itemIndex = state.items.findIndex((i) => i.id === action.meta.arg.id);
-        if (itemIndex >= 0 && state.items[itemIndex].quantity > 1) {
-          state.items[itemIndex] = {
-            ...state.items[itemIndex],
-            quantity: state.items[itemIndex].quantity - 1
-          };
-        }
-      })
-      .addCase(decrementQuantity.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(decrementQuantity.rejected, (state, action) => {
-        state.loading = false;
-        const itemIndex = state.items.findIndex((i) => i.id === action.meta.arg.id);
-        if (itemIndex >= 0) {
-          state.items[itemIndex] = {
-            ...state.items[itemIndex],
-            quantity: state.items[itemIndex].quantity + 1
-          }; // Undo the decrement
-        }
-        state.error = action.payload;
+      // Cancel User Order
+      .addCase(cancelUserOrder.fulfilled, (state, action) => {
+        const { orderId, status } = action.payload;
+        state.orderList = state.orderList.map((order) =>
+          order.id === orderId ? { ...order, status } : order
+        );
       });
   },
 });
 
+export const { applyCouponCode, removeCouponCode, resetCartError } = cartSlice.actions;
 export default cartSlice.reducer;
-export const { chekItem } = cartSlice.actions;
