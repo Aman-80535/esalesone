@@ -1,6 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-/config/firebase-service-account.json
+/config
 # dependencies
 /node_modules
 /.pnp
@@ -11,6 +11,9 @@
 !.yarn/releases
 !.yarn/versions
 **/node_modules/
+# Firebase Admin credentials
+config/*firebase-adminsdk*.json
+*.json
 
 # testing
 /coverage
@@ -42,3 +45,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+config/saasakitechassignment-firebase-adminsdk-fbsvc-c49f058aeb.json
