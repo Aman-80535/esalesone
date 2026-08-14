@@ -82,7 +82,7 @@ const CartPopup = ({ setIsOpen, isOpen }) => {
       />
 
       {/* Drawer */}
-<div className="fixed inset-y-0 right-0 z-[9999] w-full sm:max-w-md md:max-w-lg">        <div className="h-full w-full bg-white shadow-2xl flex flex-col overflow-hidden">
+<div className="fixed inset-y-0 right-0 z-[9999] w-full sm:max-w-md md:max-w-lg h-[90vh]">        <div className="h-full w-full bg-white shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="shrink-0 px-4 py-4 sm:px-5 border-b border-gray-100 bg-[#f8faf9]">
             <div className="flex items-center gap-2 min-w-0">
